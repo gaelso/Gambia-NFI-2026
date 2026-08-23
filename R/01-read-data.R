@@ -44,12 +44,21 @@ taxonomies$tree    <- read_csv("data-source/taxonomies/tree_V3.csv", show_col_ty
 taxonomies$birds   <- read_csv("data-source/taxonomies/birds_species_list.csv", show_col_types = FALSE)
 taxonomies$mammals <- read_csv("data-source/taxonomies/mammal_species.csv", show_col_types = FALSE)
 
-## Phase 1 CEO data added to categories
-categories$cluster_ph1 <- read_csv("data-source/CEO_phase1/ceo-Land-Cover-Assessment_Gambia_(All)_data.csv", show_col_types = FALSE)
+##
+## Get Phase 1 data corrected ######
+##
+
+## These files were prepared in the project Gambia-NFI-2025
+## See: https://github.com/gaelso/Gambia-NFI-2025
+
+ph1         <- list()
+ph1$raw     <- read_csv("data-source/CEO_phase1/from_CEO/ceo-Land-Cover-Assessment_Gambia_(All)_data.csv", show_col_types = FALSE)
+ph1$cluster <- read_csv("data-source/CEO_phase1/ceo-phase1-final-allocation.csv", show_col_types = FALSE)
+
 
 
 ##
-## Read ancillaries to a list
+## Read ancillaries to a list ######
 ##
 
 anci <- list()
@@ -66,11 +75,13 @@ anci$wood_density <- local({
 anci$sf_GEZ <- st_read("data-anci/gez2010/GMB_gez_2010_wgs84.geojson", quiet = TRUE)
 
 ## Ancillaries from gvt
-anci$sf_regions <- st_read("data-source/administrative_boundaries/regions.shp", quiet = TRUE)
+anci$sf_regions <- st_read("data-source/administrative_boundaries/regions.shp", quiet = TRUE) |>
+  st_transform(crs = 4326)
 
 anci$sf_country <- anci$sf_region |> summarise()
 
-anci$sf_lga <- st_read("data-source/administrative_boundaries/LG_Areas.shp", quiet = TRUE)
+anci$sf_lga <- st_read("data-source/administrative_boundaries/LG_Areas.shp", quiet = TRUE) |>
+  st_transform(crs = 4326)
 
 # ggplot() +  
 #   geom_sf(data = anci$sf_country, fill = NA, col = "RED", linewidth = 2) +

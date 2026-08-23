@@ -83,3 +83,10 @@ if(!"gez2010/GMB_gez_2010_wgs84.geojson" %in% list.files("data-anci", recursive 
   
 }
 
+
+
+##
+## Create results dir ######
+##
+
+if (!"results" %in% list.files()) dir.create("results")

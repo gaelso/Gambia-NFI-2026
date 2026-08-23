@@ -91,6 +91,7 @@ cluster_gez <- cluster |> select(cluster_no, cluster_gez, cluster_gez_label, clu
 #   left_join(cluster_gez, by = join_by(cluster_no))
 # ggplot(cluster_agb) +
 #   geom_boxplot(aes(x = cluster_info_stratum, y = cluster_agb, fill = cluster_gez))
+# rm(cluster_agb)
 ##------##
 
 ## Add GEZ/Stratum info, get RS and calc BGB = AGB * RS
@@ -111,9 +112,11 @@ tree <- tree |>
     tree_biomass_bg = round(tree_biomass_ag * tree_RS, 3)
   )
 
-## remove temporary columns
+## remove temporary columns and objects
 tree <- tree |>
   select(-cluster_gez , -cluster_gez_label, -cluster_info_stratum, -tree_RS)
+
+rm(cluster_agb)
 
 
 

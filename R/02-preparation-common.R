@@ -91,14 +91,20 @@ tree <- tree |>
 ##
 
 ## Plot starting point assumed at center
-tmp$sf_plot <- plot |>
-  filter(plot_access %in% c(0,1)) |>
-  mutate(
-    x = if_else(is.na(plot_starting_point_taken_x), plot_starting_point_given_x, plot_starting_point_taken_x),
-    y = if_else(is.na(plot_starting_point_taken_y), plot_starting_point_given_y, plot_starting_point_taken_y)
-      ) |>
-  select(cluster_no, plot_no, x, y) |>
+tmp$sf_plot <- categories$sampling_point_data |>
+  filter(!is.na(level2_code)) |>
+  select(cluster_no = level1_code, plot_no = level2_code, x = location_x, y = location_y) |>
   st_as_sf(coords = c("x", "y"), crs = 4326)
+
+## Incomplete cause of inaccessible plots  
+# tmp$sf_plot <- plot |>
+#   filter(plot_access %in% c(0,1)) |>
+#   mutate(
+#     x = if_else(is.na(plot_starting_point_taken_x), plot_starting_point_given_x, plot_starting_point_taken_x),
+#     y = if_else(is.na(plot_starting_point_taken_y), plot_starting_point_given_y, plot_starting_point_taken_y)
+#       ) |>
+#   select(cluster_no, plot_no, x, y) |>
+#   st_as_sf(coords = c("x", "y"), crs = 4326)
 
 # ggplot() +
 #   geom_spatraster(data = anci$chave_E) +
@@ -118,10 +124,16 @@ tree <- tree |>
 ## Get GEZ to cluster level ######
 ##
 
-tmp$sf_cluster <- cluster |>
-  select(cluster_no, x = cluster_info_centre_given_x, y = cluster_info_centre_given_y) |>
-  filter(!is.na(x), !is.na(y)) |>
+tmp$sf_cluster <- categories$sampling_point_data |>
+  filter(is.na(level2_code)) |>
+  select(cluster_no = level1_code, x = location_x, y = location_y) |>
   st_as_sf(coords = c("x", "y"), crs = 4326)
+
+## Incomplete cause of uinaccessible plots
+# tmp$sf_cluster <- cluster |>
+#   select(cluster_no, x = cluster_info_centre_given_x, y = cluster_info_centre_given_y) |>
+#   filter(!is.na(x), !is.na(y)) |>
+#   st_as_sf(coords = c("x", "y"), crs = 4326)
 
 # tmp$sf_cluster |>
 #   filter(cluster_no == 39) |>
@@ -140,6 +152,9 @@ tmp$cluster_gez <-  tmp$sf_cluster |>
     cluster_gez_label = if_else(cluster_no == 39, "Tropical moist forest", cluster_gez_label)
   )
 
+## Check for completeness
+tmp$cluster_gez |> filter(is.na(cluster_gez))
+
 cluster <- cluster |>
   mutate(
     cluster_gez = NA,
@@ -153,6 +168,20 @@ cluster <- cluster |>
 ## Reconcile Phase 1 and Phase 2 cluster IDs #####
 ##
 
+## Make spatial join
+tmp$sf_cluster
 
+tmp$sf_ph1 <- ph1$cluster |>
+  select(ceo_cluster_no = ceo_tract_no, ceo_id, type, center_lon, center_lat, ph1_stratum = lu_class_final, ph2_selected) |>
+  mutate(x = center_lon, y = center_lat) |>
+  st_as_sf(coords = c("x", "y"), crs = 4326)
 
+ph1$sf_cluster_harmo <- st_join(tmp$sf_ph1, tmp$sf_cluster)
+
+table(ph1$sf_cluster_harmo$ph2_selected, useNA = "ifany")
+
+## Remove cluster outside country boundaries 
+ph1$sf_cluster_harmo <- st_filter(ph1$sf_cluster_harmo, anci$sf_country)
+
+st_write(ph1$sf_cluster_harmo, "results/sf_cluster_harmo.kml", delete_dsn = TRUE)
 
