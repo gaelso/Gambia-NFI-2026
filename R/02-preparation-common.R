@@ -19,7 +19,8 @@ defaults$WD <- 0.57
 ## Carbon faction
 defaults$CF <- 0.47
 
-
+## Country area 
+defaults$country_area_nowater <- st_area(anci$sf_country) |> units::set_units("ha") |> as.integer()
 
 ##
 ## Tree weight ######
