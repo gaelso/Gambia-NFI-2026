@@ -1,3 +1,10 @@
+## Custom gitignore
+data-source/
+data-anci/
+data/
+results/
+*.DS_Store
+
 # History files
 .Rhistory
 .Rapp.history
@@ -47,3 +54,4 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+.positai
