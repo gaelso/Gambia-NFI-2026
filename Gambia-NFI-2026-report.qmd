@@ -1,0 +1,28 @@
+---
+title: "Gambia NFI 2026"
+format: html
+editor: visual
+---
+
+**3.1 Extent of Forest Resources**\
+3.1.1 Forest Area and Distribution\
+3.1.2 Change in Forest Extent
+
+**3.2 Biological Diversity**\
+3.2.1 Tree Species Composition and Diversity\
+3.2.2 Rare, Threatened and Endangered Tree Species\
+3.2.3 Wildlife Presence and Occurrence
+
+**3.3 Forest Health and Vitality**\
+3.3.1 Tree Health and Condition\
+3.3.2 Forest Disturbance\
+3.3.3 Deadwood and Litter\
+3.3.4 Forest Structure\
+3.3.5 Forest Regeneration
+
+**3.4 Productive Functions of Forests**\
+3.4.1 Non-Timber Forest Products\
+3.4.2 Forest Biomass and Carbon Stocks
+
+**3.5 Protective Functions of Forests**\
+3.5.1 Soil Condition and Characteristics

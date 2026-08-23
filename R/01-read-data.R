@@ -44,6 +44,8 @@ taxonomies$tree    <- read_csv("data-source/taxonomies/tree_V3.csv", show_col_ty
 taxonomies$birds   <- read_csv("data-source/taxonomies/birds_species_list.csv", show_col_types = FALSE)
 taxonomies$mammals <- read_csv("data-source/taxonomies/mammal_species.csv", show_col_types = FALSE)
 
+## Phase 1 CEO data added to categories
+categories$cluster_ph1 <- read_csv("data-source/CEO_phase1/ceo-Land-Cover-Assessment_Gambia_(All)_data.csv", show_col_types = FALSE)
 
 
 ##
@@ -58,20 +60,19 @@ anci$chave_E <- terra::rast("data-anci/E.bil")
 
 anci$wood_density <- local({
   load("data-anci/wsg_estimates.rda")
-  wsg_estimates
+  as_tibble(wsg_estimates)
 })
 
+anci$sf_GEZ <- st_read("data-anci/gez2010/GMB_gez_2010_wgs84.geojson", quiet = TRUE)
 
 ## Ancillaries from gvt
-anci$sf_regions <- st_read("data-source/administrative_boundaries/regions.shp")
+anci$sf_regions <- st_read("data-source/administrative_boundaries/regions.shp", quiet = TRUE)
 
 anci$sf_country <- anci$sf_region |> summarise()
 
-anci$sf_lga <- st_read("data-source/administrative_boundaries/LG_Areas.shp")
+anci$sf_lga <- st_read("data-source/administrative_boundaries/LG_Areas.shp", quiet = TRUE)
 
 # ggplot() +  
 #   geom_sf(data = anci$sf_country, fill = NA, col = "RED", linewidth = 2) +
 #   geom_sf(data = anci$sf_regions, fill = NA, aes(color = REGION), linewidth = 1) +
 #   geom_sf(data = anci$sf_lga, aes(fill = LG_Area))
-  
-

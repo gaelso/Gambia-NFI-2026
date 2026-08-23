@@ -1,5 +1,0 @@
----
-title: "Gambia NFI 2026"
-format: html
-editor: visual
----
