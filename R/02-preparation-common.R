@@ -9,7 +9,7 @@ tmp <- list()
 
 ## 
 ## Defaults #####
-##
+## 
 
 defaults <- list()
 
@@ -20,7 +20,18 @@ defaults$WD <- 0.57
 defaults$CF <- 0.47
 
 ## Country area 
-defaults$country_area_nowater <- st_area(anci$sf_country) |> units::set_units("ha") |> as.integer()
+defaults$country_area_nowater <- anci$sf_lga |> st_area() |> units::set_units("ha") |> as.integer() |> sum()
+defaults$country_area <- 1130000 ### from https://www.un.int/gambia/gambia/country-facts
+
+## Check
+# anci$sf_regions |> st_area() |> units::set_units("ha") |> as.integer() |> sum()
+# anci$sf_lga |> st_area() |> units::set_units("ha") |> as.integer() |> sum()
+
+## Plot size 
+defaults$plot_size_dbh10 <- 0.04 ## 20x20 m 
+defaults$plot_size_dbh20 <- 0.1  ## 20x50 m
+
+
 
 ##
 ## Tree weight ######
@@ -36,7 +47,7 @@ tree <- tree |>
   left_join(tmp$cluster_stratum, by = join_by(cluster_no), suffix = c("_rm", "")) |>
   select(-ends_with("_rm")) |>
   mutate(
-    tree_weight = if_else(tree_dbh < 20, 10000/400, 10000/1000),
+    tree_weight = if_else(tree_dbh < 20, 1 / defaults$plot_size_dbh10, 1 / defaults$plot_size_dbh20),
     tree_cluster_weight = if_else(cluster_info_stratum == "mangrove_forest", tree_weight / 3, tree_weight / 5)
   )
 
@@ -185,4 +196,20 @@ table(ph1$sf_cluster_harmo$ph2_selected, useNA = "ifany")
 ph1$sf_cluster_harmo <- st_filter(ph1$sf_cluster_harmo, anci$sf_country)
 
 st_write(ph1$sf_cluster_harmo, "results/sf_cluster_harmo.kml", delete_dsn = TRUE)
+
+ph1$cluster_harmo <- as_tibble(ph1$sf_cluster_harmo) |> select(-geometry)
+
+
+
+##
+## Strata Weights ######
+##
+
+ph1$strata_weights <- ph1$cluster_harmo |>
+  count(ph1_stratum, name = "ph1_count") |>
+  mutate(
+    ph1_weights = round(ph1_count / nrow(ph1$cluster_harmo), 3),
+    ph1_area    = as.integer(ph1_weights * defaults$country_area_nowater) 
+  )
+
 

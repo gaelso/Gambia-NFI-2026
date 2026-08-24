@@ -101,7 +101,7 @@ tree <- tree |>
     cluster_gez_label = NA, 
     cluster_info_stratum = NA
   ) |>
-  left_join(cluster_agb, by = join_by(cluster_no), suffix = c("_rm", "")) |>
+  left_join(cluster_gez, by = join_by(cluster_no), suffix = c("_rm", "")) |>
   select(-ends_with("_rm")) |>
   mutate(
     tree_RS = case_when(

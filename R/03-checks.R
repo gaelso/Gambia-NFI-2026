@@ -1,5 +1,10 @@
 
 
+
+##
+## TREE HxD ######
+##
+
 summary(tree)
 
 ggplot(tree) +
@@ -17,3 +22,8 @@ ggplot(tree) +
 
 ggplot(tree) +
   geom_point(aes(x = tree_basal_area, y = tree_biomass_ag))
+
+
+
+
+
