@@ -36,12 +36,12 @@
 nfi_aggregate <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_area){
   
   ## !!! FOR TESTING ONLY
-  .ph1_df = ph1_data 
-  .ph2_sp = ph2_data
-  .class_d = quo(lulc_forest_label)
-  .attr_y = quo(plot_biomass_ag)
-  .attr_x = quo(ssu_area)
-  .aoi_area = defaults$country_area_nowater
+  # .ph1_df = ph1_data 
+  # .ph2_sp = ph2_data
+  # .class_d = quo(lulc_forest_label)
+  # .attr_y = quo(plot_biomass_ag)
+  # .attr_x = quo(ssu_area)
+  # .aoi_area = defaults$country_area_nowater
   ## !!!
   
   

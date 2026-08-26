@@ -19,9 +19,16 @@ defaults$WD <- 0.57
 ## Carbon faction
 defaults$CF <- 0.47
 
+## Confidence level
+defaults$conf_level <- 0.9
+defaults$ci_alpha <- 1 - defaults$conf_level
+
+## test: qt(1 - defaults$ci_alpha/2, df = Inf)
+
 ## Country area 
 defaults$country_area_nowater <- anci$sf_lga |> st_area() |> units::set_units("ha") |> as.integer() |> sum()
 defaults$country_area <- 1130000 ### from https://www.un.int/gambia/gambia/country-facts
+defaults$main_river_area <- defaults$country_area - defaults$country_area_nowater
 
 ## Check
 # anci$sf_regions |> st_area() |> units::set_units("ha") |> as.integer() |> sum()
@@ -212,4 +219,16 @@ ph1$strata_weights <- ph1$cluster_harmo |>
     ph1_area    = as.integer(ph1_weights * defaults$country_area_nowater) 
   )
 
+
+##
+## Phase 1 stratification table ######
+##
+
+ph1_data <- ph1$cluster_harmo |> 
+  select(ceo_cluster_no, ceo_id, type, ph1_stratum, cluster_no) |>
+  mutate(
+    PSU = cluster_no,
+    subpop = 1,
+    stratum = ph1_stratum
+  )
 

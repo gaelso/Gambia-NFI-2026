@@ -116,8 +116,6 @@ tree <- tree |>
 tree <- tree |>
   select(-cluster_gez , -cluster_gez_label, -cluster_info_stratum, -tree_RS)
 
-rm(cluster_agb)
-
 
 
 ##
