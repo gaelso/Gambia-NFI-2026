@@ -3,7 +3,9 @@ data-source/
 data-anci/
 data/
 results/
+*.zip
 *.DS_Store
+
 
 # History files
 .Rhistory
