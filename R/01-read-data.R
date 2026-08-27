@@ -3,7 +3,7 @@
 
 list.dirs("data-source", recursive = F)
 
-dir_nfi <- list.dirs("data-source", recursive = F) |> str_subset("taxonomies", negate = T) |> sort(decreasing = TRUE)
+dir_nfi <- list.dirs("data-source", recursive = F) |> str_subset("gambia") |> sort(decreasing = TRUE)
 dir_nfi <- dir_nfi[1]
 
 dir_nfi_files <- list.files(dir_nfi, pattern = "\\.csv")
@@ -89,7 +89,7 @@ anci$sf_GEZ <- st_read("data-anci/gez2010/GMB_gez_2010_wgs84.geojson", quiet = T
 anci$sf_regions <- st_read("data-source/administrative_boundaries/regions.shp", quiet = TRUE) |>
   st_transform(crs = 4326)
 
-anci$sf_country <- anci$sf_region |> summarise()
+anci$sf_country <- anci$sf_regions |> summarise()
 
 anci$sf_lga <- st_read("data-source/administrative_boundaries/LG_Areas.shp", quiet = TRUE) |>
   st_transform(crs = 4326)
@@ -98,3 +98,4 @@ anci$sf_lga <- st_read("data-source/administrative_boundaries/LG_Areas.shp", qui
 #   geom_sf(data = anci$sf_country, fill = NA, col = "RED", linewidth = 2) +
 #   geom_sf(data = anci$sf_regions, fill = NA, aes(color = REGION), linewidth = 1) +
 #   geom_sf(data = anci$sf_lga, aes(fill = LG_Area))
+
