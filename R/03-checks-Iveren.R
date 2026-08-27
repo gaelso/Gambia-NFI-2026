@@ -57,7 +57,8 @@
 # ----------------------------------------------------------------
 
 #tree <- read_csv("data/input/Trees_data.csv")
-tree <- tree
+tree_bkp <- tree
+tree <- data_clean$tree
 
 dim(tree)
 names(tree)
@@ -5061,9 +5062,11 @@ cat(
 # 15.1 Import the separate causative-agent table
 # ------------------------------------------------------------
 
-tree_causes_raw <- read_csv(
-  "data/input/14_tree_condition_causes.csv"
-)
+# tree_causes_raw <- read_csv(
+#   "data/input/14_tree_condition_causes.csv"
+# )
+tree_causes_raw <- tree_condition_causes
+
 
 # For Attribute 15 we only need the tree identifiers and the
 # causative-agent fields.
@@ -6863,7 +6866,7 @@ cat(
 
 write_csv(
   tree_clean,
-  "data/clean/Trees_data_clean.csv",
+  "data/Trees_data_clean.csv",
   na = ""
 )
 
