@@ -63,17 +63,12 @@ cluster_check <- plot |> filter(plot_no == 1)
 cluster_check2 <- plot_analysis |> filter(plot_no == 1)
 
 table(cluster_check$plot_access, useNA = "ifany")
-
-plot_analysis |> filter(lulc_forest_label)
-
 table(plot_analysis$plot_access_label, plot_analysis$lulc_forest_label, useNA = "ifany")
 table(plot_analysis$cluster_access_label, plot_analysis$lulc_forest_label, useNA = "ifany")
 
 ## Assign all NA to non-forest
 ## Checking one remaining NA
 plot_analysis |> filter(plot_access_lgl, is.na(lulc_forest))
-
-
 
 ## Issue with plot 72/5: accessible but no LULC and no tree
 tree |> filter(cluster_no == 72, plot_no == 5)
