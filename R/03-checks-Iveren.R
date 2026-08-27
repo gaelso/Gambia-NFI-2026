@@ -43,11 +43,11 @@
 # 0. LOAD REQUIRED PACKAGES
 # ================================================================
 
-library(dplyr)
-library(tidyr)
-library(stringr)
-library(readr)
-library(readxl)   # Import finalized Excel species-name map
+# library(dplyr)
+# library(tidyr)
+# library(stringr)
+# library(readr)
+# library(readxl)   # Import finalized Excel species-name map
 
 # ----------------------------------------------------------------
 # Import the main Arena tree dataset.

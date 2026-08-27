@@ -58,6 +58,17 @@ ph1$cluster <- read_csv("data-source/CEO_phase1/ceo-phase1-final-allocation.csv"
 
 
 ##
+## Cleaned data #######
+##
+
+data_clean <- list()
+data_clean$tree <- read_csv("data-source/Iveren/Trees_data.csv", show_col_types = FALSE)
+
+names(data_clean$tree)
+
+
+
+##
 ## Read ancillaries to a list ######
 ##
 
