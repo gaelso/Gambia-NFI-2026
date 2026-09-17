@@ -56,15 +56,17 @@
 # QA/QC decisions for Form 5 Attributes 1–16 will be applied.
 # ----------------------------------------------------------------
 
+
 #tree <- read_csv("data/input/Trees_data.csv")
 tree_bkp <- tree
-tree <- data_clean$tree
+
+#tree <- data_clean$tree
 
 dim(tree)
 names(tree)
+names(data_clean$tree)
 
-
-# ============================================================
+ # ============================================================
 # PART 1: BASIC RECORD AND SAMPLING-STRUCTURE QA
 # ============================================================
 #

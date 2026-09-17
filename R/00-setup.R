@@ -18,6 +18,7 @@ suppressPackageStartupMessages({
   use_package(tidyterra)
   use_package(tictoc)
   use_package(readxl)
+  use_package(ggrepel)
 })
 
 ## Set ggplot theme

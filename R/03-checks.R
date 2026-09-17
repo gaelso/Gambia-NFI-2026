@@ -2,7 +2,7 @@
 
 ## list of check elements
 check <- list()
-
+gg <- list()
 
 ##
 ## Tree checks ######
@@ -38,11 +38,18 @@ ggplot(tree) +
 ##
 summary(plot_analysis$plot_calc_biomass_ag)
 
-plot_analysis |>
+check$plot_agb150 <- plot_analysis |> filter(plot_calc_biomass_ag >= 150)
+
+gg$plot_agbxdens <- plot_analysis |>
   filter(plot_access_lgl) |>
-  ggplot() +
-  geom_point(aes(x = plot_calc_tree_density, plot_calc_biomass_ag)) +
-  facet_wrap(~lulc_forest_label)
+  ggplot(aes(x = plot_calc_tree_density, plot_calc_biomass_ag)) +
+  geom_point() +
+  facet_wrap(~lulc_forest_label) +
+  geom_point(data = check$plot_agb150, shape = 21, col = "red", size = 4) +
+  geom_label_repel(data = check$plot_agb150, aes(label = plot_id), col = "red", min.segment.length = 0)
+print(gg$plot_agbxdens)
+
+## > 83_2 ha Baobab
 
 
 

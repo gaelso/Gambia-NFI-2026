@@ -17,7 +17,7 @@ plot_list <- categories$sampling_point_data |>
   select(cluster_no = level1_code, plot_no = level2_code, plot_center_x = location_x, plot_center_y = location_y, stratum = forest_type)
 
 ## Retrieve accessibility ####
-cluster_access <- cluster |> select(cluster_no, cluster_access, cluster_access_label)
+cluster_access <- cluster |> select(cluster_no, cluster_access, cluster_access_label, cluster_info_stratum, cluster_info_region_label)
 plot_access    <- plot |> select(cluster_no, plot_no, plot_access, plot_access_label)
 
 ## Assign dominant land use to plot #### 
@@ -78,5 +78,12 @@ vec_plot_notree_close_forest <- plot_notree |>filter(lulc_forest == 2) |> pull(p
 
 
 
+##
+## Join info to 'tree' ######
+##
 
+names(plot_analysis)
 
+tree <- tree |>
+  left_join(plot_analysis, by = join_by(cluster_no, plot_no))
+ 

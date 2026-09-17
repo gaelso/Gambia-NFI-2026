@@ -202,7 +202,7 @@ table(ph1$sf_cluster_harmo$ph2_selected, useNA = "ifany")
 ## Remove cluster outside country boundaries 
 ph1$sf_cluster_harmo <- st_filter(ph1$sf_cluster_harmo, anci$sf_country)
 
-st_write(ph1$sf_cluster_harmo, "results/sf_cluster_harmo.kml", delete_dsn = TRUE)
+st_write(ph1$sf_cluster_harmo, "results/sf_cluster_harmo.kml", delete_dsn = TRUE, quiet = TRUE)
 
 ph1$cluster_harmo <- as_tibble(ph1$sf_cluster_harmo) |> select(-geometry)
 

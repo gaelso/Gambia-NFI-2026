@@ -23,6 +23,7 @@ cluster_domain <- plot_analysis |>
 
 cluster_vars <- plot_analysis |>
   filter(plot_access_lgl) |>
+  #filter(!(lulc_forest_label != "Non-forest" & plot_calc_biomass_ag == 0)) |>
   left_join(cluster_domain, by = join_by(cluster_no)) |>
   filter(lulc_forest_label == cluster_lulc_forest_label) |>
   summarise(
@@ -53,6 +54,7 @@ cluster_analysis |>
 ## ME = Margin of Error (half-width of confidence interval) = SD / sqrt(N) * t.inv
 ## MEP = Margin of Error Percentage = U% (ratio of half-width of CI over mean) = ME / mean
 forest_type <- cluster_analysis |>
+  filter(!is.na(cluster_biomass_ag)) |>
   summarise(
     cluster_count    = n(),
     tree_count       = mean(cluster_tree_count),
