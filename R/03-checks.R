@@ -14,8 +14,8 @@ summary(tree)
 tree |>
   left_join(plot_analysis, by = join_by(cluster_no, plot_no)) |>
   ggplot() +
-  geom_point(aes(x = tree_dbh, y = tree_height, color = tree_condition_overall_label)) +
-  facet_wrap(~lulc_forest_label)
+  geom_point(aes(x = tree_dbh, y = tree_height, color = tree_condition_overall_label)) #+
+  #facet_wrap(~lulc_forest_label)
 
 ggplot(tree) +
   geom_point(aes(x = tree_dbh, y = tree_height, color = tree_condition_overall_label)) +

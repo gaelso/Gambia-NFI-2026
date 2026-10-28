@@ -5,6 +5,7 @@ data/
 results/
 *.zip
 *.DS_Store
+.vscode/
 
 
 # History files

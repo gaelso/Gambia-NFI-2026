@@ -1,10 +1,10 @@
 
 
-# ================================================================
+# ++++++++++++++++++++++++++++++
 # THE GAMBIA NATIONAL FOREST INVENTORY 2025
 # FINAL TREE DATA CLEANING AND QA/QC WORKFLOW
 # ATTRIBUTES 1–16
-# ================================================================
+# ++++++++++++++++++++++++++++++
 #
 # PURPOSE
 #
@@ -39,9 +39,12 @@
 # 6.The final tree dataset must retain one row per tree/stump.
 #
 
-# ================================================================
-# 0. LOAD REQUIRED PACKAGES
-# ================================================================
+
+
+##
+## 0. LOAD REQUIRED PACKAGES #####
+##
+
 
 # library(dplyr)
 # library(tidyr)
@@ -49,12 +52,12 @@
 # library(readr)
 # library(readxl)   # Import finalized Excel species-name map
 
-# ----------------------------------------------------------------
+# ++++++++
 # Import the main Arena tree dataset.
 #
 # This is the primary dataset to which the finalized cleaning and
 # QA/QC decisions for Form 5 Attributes 1–16 will be applied.
-# ----------------------------------------------------------------
+# +++++++
 
 
 #tree <- read_csv("data/input/Trees_data.csv")
@@ -66,9 +69,13 @@ dim(tree)
 names(tree)
 names(data_clean$tree)
 
- # ============================================================
-# PART 1: BASIC RECORD AND SAMPLING-STRUCTURE QA
-# ============================================================
+
+
+## 
+## PART 1: BASIC RECORD AND SAMPLING-STRUCTURE QA ######
+## 
+
+
 #
 # This section examines the first three attributes of the NFI
 # tree field form:
@@ -88,9 +95,9 @@ names(data_clean$tree)
 
 
 
-# ============================================================
-# ATTRIBUTE 1: TREE / STUMP NO.
-# ============================================================
+##
+## _ ATTRIBUTE 1: TREE / STUMP NO. =====
+## 
 
 # Tree/Stump No. identifies individual tree or stump records within
 # each plot.
@@ -103,9 +110,9 @@ names(data_clean$tree)
 # Previous QA found no problems with this attribute.
 
 
-# ------------------------------------------------------------
-# 1.1 Basic validity check
-# ------------------------------------------------------------
+#
+# __ 1.1 Basic validity check ------
+#
 
 tree %>%
   summarise(
@@ -191,9 +198,9 @@ tree %>%
 # tree_no is retained unchanged.
 
 
-# ============================================================
-# ATTRIBUTE 2: PLOT / SUBPLOT
-# ============================================================
+## 
+## _ ATTRIBUTE 2: PLOT / SUBPLOT ######
+##
 
 # The NFI uses two tree-measurement plot sizes:
 #
@@ -6876,3 +6883,5 @@ cat(
   "\nFinal cleaned tree dataset exported successfully as:",
   "\nTrees_data_clean.csv\n"
 )
+
+tree_clean
