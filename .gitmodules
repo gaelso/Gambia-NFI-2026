@@ -1,0 +1,3 @@
+[submodule "external/iveren-checks"]
+	path = external/iveren-checks
+	url = https://github.com/iverenc/GAMBIA-NFA-2025.git
