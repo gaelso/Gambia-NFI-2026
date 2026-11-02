@@ -63,20 +63,101 @@ tree$tree_height_chave <- exp(tree$tree_height_chave_log + 0.243^2 / 2)
 tree$tree_height_chave_cilow <- exp(tree$tree_height_chave_log - qnorm(1 - defaults$ci_alpha / 2) * 0.243)
 tree$tree_height_chave_ciupp <- exp(tree$tree_height_chave_log + qnorm(1 - defaults$ci_alpha / 2) * 0.243)
 
+tree |>
+  ggplot(aes(x = tree_dbh)) +
+  geom_point(aes(y = tree_height)) +
+  geom_line(aes(y = tree_height_chave_cilow, col = as.character(cluster_no))) +
+  geom_line(aes(y = tree_height_chave_ciupp, col = as.character(cluster_no))) +
+  theme(legend.position = "none")
+
+
+
+## + Local height model (lmfor) ######
+
+## Model forms most used for (West) African trees, fitted with random effects (Mehtätalo et al. 2015),
+## grouped by cluster as the NFI aggregation unit:
+## - Curtis:           H = 1.3 + a (D / (1 + D))^b,     best fit in Sudanian savanna woodlands, Burkina Faso (Valbuena et al. 2016)
+## - Weibull:          H = 1.3 + a (1 - exp(-b D^c)),   best in pantropical comparisons (Ledo et al. 2016, Sullivan et al. 2018)
+## - Michaelis-Menten: H = 1.3 + a D / (b + D),         among the best in central Africa (Kearsley et al. 2016)
+##
+## 1. Model form, goodness of fit on measured live trees (2,862 trees, 84 clusters), nranp = random parameters per cluster:
+##   model     nranp     AIC   RMSE (m)  bias (m)
+##   curtis        2  13411.9    2.345    -0.015   <- selected
+##   weibull       2  13422.5    2.367    -0.004   (one more parameter, fitted with nlme, no convergence in fithd)
+##   micment       1  13442.5    2.402    -0.029   (no convergence with nranp = 2)
+##   weibull       1  13444.0    2.402    -0.009
+##   curtis        1  13470.6    2.415    -0.008
+##   weibull       0  14608.4    3.101     0.000   (fixed effects only)
+##   curtis        0  14609.8    3.103     0.000
+##   micment       0  14627.9    3.113    -0.015
+##
+## 2. Effects, Curtis with residual variance as a power of DBH (varf = 1 in fithd):
+##   effects                                  AIC   RMSE (m)  bias closed / open / non-forest (m)
+##   fixed only                            14432.2    3.103    0.96 / -0.41 / -1.18
+##   forest type fixed                     14294.7    3.015   -0.01 /  0.01 /  0.01
+##   forest type random (3 levels)         14317.1    3.020    0.01 /  0.00 / -0.10   (too few levels for a variance)
+##   cluster random                        13237.3    2.358    0.07 /  0.02 / -0.53
+##   forest type fixed + cluster random    13225.2    2.349    0.01 /  0.02 /  0.00   <- selected
+## Clusters with few measured trees are shrunk towards the curve of their forest type.
+
+## Forest type of each tree from its LULC section, non-forest land uses grouped
+tree <- tree |>
+  left_join(
+    plot_lulc |> select(cluster_no, plot_no, tree_lulc_no = lulc_id, tree_lulc_forest_label = lulc_forest_label),
+    by = join_by(cluster_no, plot_no, tree_lulc_no)
+  ) |>
+  mutate(tree_lulc_forest_label = replace_na(tree_lulc_forest_label, "Non-forest"))
+
+tmp$hd_data <- tree |>
+  filter(!is.na(tree_height), tree_height > 1.3) |>
+  transmute(h = tree_height, d = tree_dbh, ftype = factor(tree_lulc_forest_label), cluster = factor(cluster_no)) |>
+  as.data.frame()
+
+## Starting values from the model without forest type, forest type effects start at 0
+tmp$hd_start <- coef(nls(h ~ HDcurtis(d, a, b), data = tmp$hd_data, start = list(a = 15, b = 10)))
+tmp$hd_nftype <- nlevels(tmp$hd_data$ftype)
+
+tmp$hd_model <- nlme(
+  h ~ HDcurtis(d, a, b),
+  data = tmp$hd_data,
+  fixed = list(a ~ ftype, b ~ ftype),
+  random = a + b ~ 1 | cluster,
+  weights = varPower(form = ~ d),
+  start = c(tmp$hd_start["a"], rep(0, tmp$hd_nftype - 1), tmp$hd_start["b"], rep(0, tmp$hd_nftype - 1)),
+  control = nlmeControl(maxIter = 200, msMaxIter = 200, pnlsMaxIter = 50)
+)
+
+## Prediction with the cluster random effects, forest type curve for clusters without measured heights
+tmp$hd_newdata <- data.frame(
+  d = tree$tree_dbh,
+  ftype = factor(tree$tree_lulc_forest_label, levels = levels(tmp$hd_data$ftype)),
+  cluster = factor(tree$cluster_no)
+)
+
+tree$tree_height_model <- coalesce(
+  as.numeric(predict(tmp$hd_model, newdata = tmp$hd_newdata, level = 1)),
+  as.numeric(predict(tmp$hd_model, newdata = tmp$hd_newdata, level = 0))
+)
+
+tree |>
+  ggplot(aes(x = tree_dbh)) +
+  geom_point(aes(y = tree_height)) +
+  geom_line(aes(y = tree_height_chave, color = as.character(cluster_no)), linetype = "dotted") +
+  geom_line(aes(y = tree_height_model, color = as.character(cluster_no))) +
+  facet_wrap(~cluster_no) +
+  theme(legend.position = "none")
+
+## + Corrected heights ######
+
 ## Stumps keep their recorded height (stump height), the model predicts total tree height
 ## Missing heights and heights outside the prediction interval replaced with the model height
 table(tree$tree_status_label)
 
-## + Local height model (lmfor) ######
-
-
-
-
-## + Corrected heights ######
+## Measured heights trusted (screened in the data cleaning), only missing heights replaced with the local model
 tree <- tree |>
   mutate(
     tree_height_corr = case_when(
-      is.na(tree_height) ~ tree_height_chave,
+      is.na(tree_height) ~ tree_height_model,
       ## Chave threshold not used as biased upward in WestAf Forest.
       # tree_height < tree_height_chave_cilow ~ tree_height_chave,
       # tree_height > tree_height_chave_ciupp ~ tree_height_chave,
@@ -85,12 +166,6 @@ tree <- tree |>
   ) |>
   select(-tree_height_chave_log)
 
-tree |>
-  ggplot(aes(x = tree_dbh)) +
-  geom_point(aes(y = tree_height)) +
-  geom_line(aes(y = tree_height_chave_cilow, col = as.character(cluster_no))) +
-  geom_line(aes(y = tree_height_chave_ciupp, col = as.character(cluster_no))) +
-  theme(legend.position = "none")
 
 
 ##

@@ -19,6 +19,7 @@ suppressPackageStartupMessages({
   use_package(tictoc)
   use_package(readxl)
   use_package(ggrepel)
+  use_package(lmfor)
 })
 
 ## Set ggplot theme
