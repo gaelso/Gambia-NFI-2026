@@ -99,18 +99,11 @@ tree |>
 ##   cluster random                        13237.3    2.358    0.07 /  0.02 / -0.53
 ##   forest type fixed + cluster random    13225.2    2.349    0.01 /  0.02 /  0.00   <- selected
 ## Clusters with few measured trees are shrunk towards the curve of their forest type.
-
-## Forest type of each tree from its LULC section, non-forest land uses grouped
-tree <- tree |>
-  left_join(
-    plot_lulc |> select(cluster_no, plot_no, tree_lulc_no = lulc_id, tree_lulc_forest_label = lulc_forest_label),
-    by = join_by(cluster_no, plot_no, tree_lulc_no)
-  ) |>
-  mutate(tree_lulc_forest_label = replace_na(tree_lulc_forest_label, "Non-forest"))
+## Forest type of each tree ('plot_lulc_forest_label') added in 'R/02-preparation-common.R'
 
 tmp$hd_data <- tree |>
   filter(!is.na(tree_height), tree_height > 1.3) |>
-  transmute(h = tree_height, d = tree_dbh, ftype = factor(tree_lulc_forest_label), cluster = factor(cluster_no)) |>
+  transmute(h = tree_height, d = tree_dbh, ftype = factor(plot_lulc_forest_label), cluster = factor(cluster_no)) |>
   as.data.frame()
 
 ## Starting values from the model without forest type, forest type effects start at 0
@@ -130,7 +123,7 @@ tmp$hd_model <- nlme(
 ## Prediction with the cluster random effects, forest type curve for clusters without measured heights
 tmp$hd_newdata <- data.frame(
   d = tree$tree_dbh,
-  ftype = factor(tree$tree_lulc_forest_label, levels = levels(tmp$hd_data$ftype)),
+  ftype = factor(tree$plot_lulc_forest_label, levels = levels(tmp$hd_data$ftype)),
   cluster = factor(tree$cluster_no)
 )
 
@@ -142,7 +135,7 @@ tree$tree_height_model <- coalesce(
 tree |>
   ggplot(aes(x = tree_dbh)) +
   geom_point(aes(y = tree_height)) +
-  geom_line(aes(y = tree_height_chave, color = as.character(cluster_no)), linetype = "dotted") +
+  geom_line(aes(y = tree_height_chave, color = as.character(clust)), linetype = "dotted") +
   geom_line(aes(y = tree_height_model, color = as.character(cluster_no))) +
   facet_wrap(~cluster_no) +
   theme(legend.position = "none")
@@ -225,7 +218,7 @@ tree <- tree |>
 
 ## remove temporary columns and objects
 tree <- tree |>
-  select(-cluster_gez , -cluster_gez_label, -cluster_info_stratum, -tree_RS)
+  select(-cluster_gez , -cluster_gez_label, -tree_RS)
 
 
 

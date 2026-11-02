@@ -71,23 +71,88 @@ defaults$plot_size_dbh20 <- 0.1  ## 20x50 m
 
 
 ##
-## Tree weight ######
+## Add cluster stratum and plot LULC to tree ######
 ##
 
 tmp <- list()
 
 table(cluster$cluster_info_stratum, useNA = "ifany")
 
-tmp$cluster_stratum <- cluster |> select(cluster_no, cluster_info_stratum)
+tmp$cluster_stratum <- cluster |> 
+  select(cluster_no, cluster_info_stratum)
 tmp$cluster_count <- nrow(cluster)
 
+## Forest type of each tree from its LULC section, non-forest land uses grouped
+tmp$plot_lulc <- plot_lulc |>
+  select(
+    cluster_no,
+    plot_no,
+    tree_lulc_no = lulc_id,
+    plot_lulc_forest = lulc_forest,
+    plot_lulc_forest_label = lulc_forest_label
+  )
+
 tree <- tree |>
-  mutate(cluster_info_stratum = NA) |>
-  left_join(tmp$cluster_stratum, by = join_by(cluster_no), suffix = c("_rm", "")) |>
+  mutate(
+    cluster_info_stratum = NA,
+    plot_lulc_forest = NA,
+    plot_lulc_forest_label = NA
+  ) |>
+  left_join(
+    tmp$cluster_stratum,
+    by = join_by(cluster_no),
+    suffix = c("_rm", "")
+  ) |>
+  left_join(
+    tmp$plot_lulc,
+    by = join_by(cluster_no, plot_no, tree_lulc_no),
+    suffix = c("_rm", "")
+  ) |>
   select(-ends_with("_rm")) |>
   mutate(
+    plot_lulc_forest_label = replace_na(plot_lulc_forest_label, "Non-forest")
+  )
+
+table(tree$cluster_info_stratum, tree$plot_lulc_forest_label, useNA = "ifany")
+
+## Number of trees per forest type: cluster stratum vs plot LULC section, diagonal = agreement
+tmp$fig_tree_lulc <- tree |>
+  count(
+    stratum = str_to_title(cluster_info_stratum),
+    lulc = plot_lulc_forest_label
+  ) |>
+  mutate(
+    stratum = factor(stratum, levels = c("Closed Forest", "Open Forest", "Mangrove Forest")),
+    lulc = factor(lulc, levels = c("Closed Forest", "Open Forest", "Mangrove Forest", "Non-forest"))
+  ) |>
+  complete(stratum, lulc, fill = list(n = 0))
+
+## Square root color scale so that the small mismatches remain visible next to the diagonal
+tmp$fig_tree_lulc |>
+  ggplot(aes(x = lulc, y = stratum, fill = n)) +
+  geom_tile(color = "white", linewidth = 1) +
+  geom_text(aes(label = n, color = n > max(n) / 4), size = 3.5) +
+  scale_fill_gradientn(colors = c("#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#104281"), trans = "sqrt") +
+  scale_color_manual(values = c(`TRUE` = "white", `FALSE` = "#1a1a19"), guide = "none") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) #+
+  #scale_y_discrete(limits = rev) +
+  #labs(
+   # x = "Plot LULC section (plot_lulc_forest_label)",
+    #y = "Cluster stratum (cluster_info_stratum)",
+    #fill = "Tree records"
+  #) +
+  #theme(panel.grid = element_blank())
+
+
+
+##
+## Tree weight ######
+##
+
+tree <- tree |>
+  mutate(
     tree_weight = if_else(tree_dbh < 20, 1 / defaults$plot_size_dbh10, 1 / defaults$plot_size_dbh20),
-    tree_cluster_weight = if_else(cluster_info_stratum == "mangrove_forest", tree_weight / 3, tree_weight / 5)
+    tree_cluster_weight = if_else(cluster_info_stratum == "mangrove forest", tree_weight / 3, tree_weight / 5)
   )
 
 
