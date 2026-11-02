@@ -26,3 +26,73 @@ editor: visual
 
 **3.5 Protective Functions of Forests**\
 3.5.1 Soil Condition and Characteristics
+
+
+
+# Results and Discussion
+
+
+## Extent of Forest Resources
+
+### Forest Area and Distribution
+table with area of forest type by country / region
+
+
+### Change in Forest Extent
+Estimating change requires re-viositing the CEO plots of NFI phase 1 and record year of last change, or all changes over a period of 5-10 years.
+
+## Biological Diversity
+
+
+### Tree Species Composition and Diversity
+IVI, Shannon index keep the top 10 or 20. We can do it by species and genus and family
+
+### Rare, Threatened and Endangered Tree Species
+Check the whole species list against the IUCN checklist.
+
+
+### Wildlife Presence and Occurrence
+How many plots have sign of wildlife / make a ratio forest type
+How impoortant are specific wildlife species (Shannon index)
+
+
+## Forest Health and Vitality
+
+
+### Tree Health and Condition
+percentage of healthy / damage trees. 
+
+### Forest Disturbance
+how many plots with forest disturbances. table with disturbance cat, spread by region
+
+
+### Deadwood and Litter
+Litter: N plots per forest type for litter depth and composition
+
+### Forest Structure
+Tree density per diameter class
+
+tree height classes to be check (0-5, 5-10, etc) national forest type and region and regionxforest type
+
+### Forest Regeneration
+seedling and sapling count per ha for region / foprest type cross.
+
+Importance of regeneration species distribution and density
+
+
+## Productive Functions of Forests
+
+### Non-Timber Forest Products
+table number of plots that are abundant / rare for medicinal etc. per forest type/ region / nationally
+
+
+### Forest Biomass and Carbon Stocks
+Ok
+
+
+## Protective Functions of Forests
+
+
+### Soil Condition and Characteristics
+Leave for now
+soil descriptive per forest type. 

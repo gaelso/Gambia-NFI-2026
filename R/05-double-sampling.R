@@ -36,7 +36,7 @@ res_agb <- nfi_aggregate(
   .ph1_df = ph1_data, 
   .ph2_sp = ph2_data, 
   .class_d = lulc_forest_label, 
-  .attr_y = plot_calc_biomass_ag, 
+  .attr_y = plot_calc_biomass_ag_sum, 
   .attr_x = ssu_area, 
   .aoi_area = defaults$country_area_nowater
   )

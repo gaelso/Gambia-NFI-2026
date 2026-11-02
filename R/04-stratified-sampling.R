@@ -73,15 +73,14 @@ forest_type <- cluster_analysis |>
     tree_density_me = tree_density_sd / sqrt(cluster_count) * qt(1-defaults$ci_alpha/2, df = cluster_count - 1),
     tree_density_mep = round(tree_density_me / tree_density * 100, 2),
     basal_area_me = basal_area_sd / sqrt(cluster_count) * qt(1-defaults$ci_alpha/2, df = cluster_count - 1),
-    basal_area_mep = round(basal_area_me / tree_density * 100, 2),
+    basal_area_mep = round(basal_area_me / basal_area * 100, 2),
     biomass_ag_me = biomass_ag_sd / sqrt(cluster_count) * qt(1-defaults$ci_alpha/2, df = cluster_count - 1),
-    biomass_ag_mep = round(biomass_ag_me / tree_density * 100, 2),
+    biomass_ag_mep = round(biomass_ag_me / biomass_ag * 100, 2),
     biomass_total_me = biomass_total_sd / sqrt(cluster_count) * qt(1-defaults$ci_alpha/2, df = cluster_count - 1),
-    biomass_total_mep = round(biomass_total_me / tree_density * 100, 2),
-  )
+    biomass_total_mep = round(biomass_total_me / biomass_total * 100, 2),
+  ) |>
+  arrange(cluster_lulc_forest)
 
-# forest_type_final <- ph1$strata_weights |>
-#   mutate(cluster_lulc_)
 
 forest_type |>
   ggplot(aes(x = cluster_lulc_forest_label)) +
@@ -95,6 +94,6 @@ write_csv(forest_type, "results/forest_type_draft.csv")
 
 
 tt <- plot_analysis |> 
-  filter(lulc_forest_label == "Close Forest")
+  filter(lulc_forest_label == "Closed Forest")
 
 

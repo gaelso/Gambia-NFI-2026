@@ -52,8 +52,45 @@ tree$tree_basal_area <- pi * (tree$tree_dbh/200)^2
 ## Tree Height Corrected #####
 ##
 
-tree$tree_height_corr <- tree$tree_height
+## + Chave et al. 2014 model for correction of NAs ######
 
+## Missing heights of standing trees estimated with Chave et al. 2014 height-diameter model, eq. 6a:
+## ln(H) = 0.893 - E + 0.760 ln(D) - 0.0340 [ln(D)]^2, RSE = 0.243
+## Back-transformation bias corrected with exp(RSE^2/2) (Baskerville 1972)
+## Prediction interval at the confidence level in 'defaults', exp(ln(H) +/- z * RSE), no bias correction for the bounds
+tree$tree_height_chave_log <- with(tree, 0.893 - chaveE + 0.760 * log(tree_dbh) - 0.0340 * log(tree_dbh)^2)
+tree$tree_height_chave <- exp(tree$tree_height_chave_log + 0.243^2 / 2)
+tree$tree_height_chave_cilow <- exp(tree$tree_height_chave_log - qnorm(1 - defaults$ci_alpha / 2) * 0.243)
+tree$tree_height_chave_ciupp <- exp(tree$tree_height_chave_log + qnorm(1 - defaults$ci_alpha / 2) * 0.243)
+
+## Stumps keep their recorded height (stump height), the model predicts total tree height
+## Missing heights and heights outside the prediction interval replaced with the model height
+table(tree$tree_status_label)
+
+## + Local height model (lmfor) ######
+
+
+
+
+## + Corrected heights ######
+tree <- tree |>
+  mutate(
+    tree_height_corr = case_when(
+      is.na(tree_height) ~ tree_height_chave,
+      ## Chave threshold not used as biased upward in WestAf Forest.
+      # tree_height < tree_height_chave_cilow ~ tree_height_chave,
+      # tree_height > tree_height_chave_ciupp ~ tree_height_chave,
+      TRUE ~ tree_height
+    )
+  ) |>
+  select(-tree_height_chave_log)
+
+tree |>
+  ggplot(aes(x = tree_dbh)) +
+  geom_point(aes(y = tree_height)) +
+  geom_line(aes(y = tree_height_chave_cilow, col = as.character(cluster_no))) +
+  geom_line(aes(y = tree_height_chave_ciupp, col = as.character(cluster_no))) +
+  theme(legend.position = "none")
 
 
 ##
@@ -71,7 +108,6 @@ tree$tree_stem_volume <- 0.67 * tree$tree_basal_area * tree$tree_height_corr
 ## Chave 2014 equation
 
 tree$tree_biomass_ag <- with(tree, round(0.0673 * (tree_wood_density * tree_dbh^2 * tree_height_corr)^0.976 / 1000, 3))
-
 
 
 ##

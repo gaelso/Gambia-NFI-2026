@@ -1,101 +1,101 @@
 
-## Path to NFI data
+# ## Path to NFI data
 
-list.dirs("data-source", recursive = F)
+# list.dirs("data-source", recursive = F)
 
-dir_nfi <- list.dirs("data-source", recursive = F) |> str_subset("gambia") |> sort(decreasing = TRUE)
-dir_nfi <- dir_nfi[1]
+# dir_nfi <- list.dirs("data-source", recursive = F) |> str_subset("gambia") |> sort(decreasing = TRUE)
+# dir_nfi <- dir_nfi[1]
 
-dir_nfi_files <- list.files(dir_nfi, pattern = "\\.csv")
+# dir_nfi_files <- list.files(dir_nfi, pattern = "\\.csv")
 
 
 
-##
-## Read NFI files to environment ######
-##
+# ##
+# ## Read NFI files to environment ######
+# ##
 
-walk(dir_nfi_files, function(x){
+# walk(dir_nfi_files, function(x){
   
-  data <- read_csv(file.path(dir_nfi, x), show_col_types = FALSE)
-  name <- x |> str_sub(start = 4, end = -5)
+#   data <- read_csv(file.path(dir_nfi, x), show_col_types = FALSE)
+#   name <- x |> str_sub(start = 4, end = -5)
   
-  assign(name, data, envir = .GlobalEnv)
+#   assign(name, data, envir = .GlobalEnv)
   
-})
+# })
 
 
 
-##
-## Read categories to a list ######
-##
+# ##
+# ## Read categories to a list ######
+# ##
 
-if (!"categories" %in% list.files(dir_nfi)) stop("missing categories in the data export from OF Arena")
+# if (!"categories" %in% list.files(dir_nfi)) stop("missing categories in the data export from OF Arena")
 
-categories <- list.files(file.path(dir_nfi, "categories"), pattern = "\\.csv") |>
-  set_names(~ str_remove(.x, "\\.csv$")) |>
-  map(~ read_csv(file.path(dir_nfi, "categories",.x), show_col_types = FALSE))
+# categories <- list.files(file.path(dir_nfi, "categories"), pattern = "\\.csv") |>
+#   set_names(~ str_remove(.x, "\\.csv$")) |>
+#   map(~ read_csv(file.path(dir_nfi, "categories",.x), show_col_types = FALSE))
 
-## Taxonomies are downloaded manually from the Arena survey and renamed to same name as in Arena survey
+# ## Taxonomies are downloaded manually from the Arena survey and renamed to same name as in Arena survey
 
-if (!"taxonomies" %in% list.dirs("data-source", full.names = FALSE)) stop("missing taxonomines, export from OF Arena manually into: 'data-source/'")
+# if (!"taxonomies" %in% list.dirs("data-source", full.names = FALSE)) stop("missing taxonomines, export from OF Arena manually into: 'data-source/'")
 
-taxonomies         <- list()
-taxonomies$tree    <- read_csv("data-source/taxonomies/tree_V3.csv", show_col_types = FALSE)
-taxonomies$birds   <- read_csv("data-source/taxonomies/birds_species_list.csv", show_col_types = FALSE)
-taxonomies$mammals <- read_csv("data-source/taxonomies/mammal_species.csv", show_col_types = FALSE)
+# taxonomies         <- list()
+# taxonomies$tree    <- read_csv("data-source/taxonomies/tree_V3.csv", show_col_types = FALSE)
+# taxonomies$birds   <- read_csv("data-source/taxonomies/birds_species_list.csv", show_col_types = FALSE)
+# taxonomies$mammals <- read_csv("data-source/taxonomies/mammal_species.csv", show_col_types = FALSE)
 
-##
-## Get Phase 1 data corrected ######
-##
+# ##
+# ## Get Phase 1 data corrected ######
+# ##
 
-## These files were prepared in the project Gambia-NFI-2025
-## See: https://github.com/gaelso/Gambia-NFI-2025
+# ## These files were prepared in the project Gambia-NFI-2025
+# ## See: https://github.com/gaelso/Gambia-NFI-2025
 
-ph1         <- list()
-ph1$raw     <- read_csv("data-source/CEO_phase1/from_CEO/ceo-Land-Cover-Assessment_Gambia_(All)_data.csv", show_col_types = FALSE)
-ph1$cluster <- read_csv("data-source/CEO_phase1/ceo-phase1-final-allocation.csv", show_col_types = FALSE)
-
-
-
-##
-## Cleaned data #######
-##
-
-data_clean <- list()
-data_clean$tree <- read_csv("data-source/Iveren/Trees_data.csv", show_col_types = FALSE)
-
-names(data_clean$tree)
+# ph1         <- list()
+# ph1$raw     <- read_csv("data-source/CEO_phase1/from_CEO/ceo-Land-Cover-Assessment_Gambia_(All)_data.csv", show_col_types = FALSE)
+# ph1$cluster <- read_csv("data-source/CEO_phase1/ceo-phase1-final-allocation.csv", show_col_types = FALSE)
 
 
 
-##
-## Read ancillaries to a list ######
-##
+# ##
+# ## Cleaned data #######
+# ##
 
-anci <- list()
+# data_clean <- list()
+# data_clean$tree <- read_csv("data-source/Iveren/Trees_data.csv", show_col_types = FALSE)
 
-## Ancillaries downloaded from internet , see 00-setup.R
-anci$chave_E <- terra::rast("data-anci/E.bil")
-#plot(anci$chave_E)
+# names(data_clean$tree)
 
-anci$wood_density <- local({
-  load("data-anci/wsg_estimates.rda")
-  as_tibble(wsg_estimates)
-})
 
-anci$sf_GEZ <- st_read("data-anci/gez2010/GMB_gez_2010_wgs84.geojson", quiet = TRUE)
 
-## Ancillaries from gvt
-anci$sf_regions <- st_read("data-source/administrative_boundaries/regions.shp", quiet = TRUE) |>
-  st_transform(crs = 4326)
+# ##
+# ## Read ancillaries to a list ######
+# ##
 
-anci$sf_country <- anci$sf_regions |> summarise()
+# anci <- list()
 
-anci$sf_lga <- st_read("data-source/administrative_boundaries/LG_Areas.shp", quiet = TRUE) |>
-  st_transform(crs = 4326)
+# ## Ancillaries downloaded from internet , see 00-setup.R
+# anci$chave_E <- terra::rast("data-anci/E.bil")
+# #plot(anci$chave_E)
 
-# ggplot() +  
-#   geom_sf(data = anci$sf_country, fill = NA, col = "RED", linewidth = 2) +
-#   geom_sf(data = anci$sf_regions, fill = NA, aes(color = REGION), linewidth = 1) +
-#   geom_sf(data = anci$sf_lga, aes(fill = LG_Area))
+# anci$wood_density <- local({
+#   load("data-anci/wsg_estimates.rda")
+#   as_tibble(wsg_estimates)
+# })
+
+# anci$sf_GEZ <- st_read("data-anci/gez2010/GMB_gez_2010_wgs84.geojson", quiet = TRUE)
+
+# ## Ancillaries from gvt
+# anci$sf_regions <- st_read("data-source/administrative_boundaries/regions.shp", quiet = TRUE) |>
+#   st_transform(crs = 4326)
+
+# anci$sf_country <- anci$sf_regions |> summarise()
+
+# anci$sf_lga <- st_read("data-source/administrative_boundaries/LG_Areas.shp", quiet = TRUE) |>
+#   st_transform(crs = 4326)
+
+# # ggplot() +  
+# #   geom_sf(data = anci$sf_country, fill = NA, col = "RED", linewidth = 2) +
+# #   geom_sf(data = anci$sf_regions, fill = NA, aes(color = REGION), linewidth = 1) +
+# #   geom_sf(data = anci$sf_lga, aes(fill = LG_Area))
 

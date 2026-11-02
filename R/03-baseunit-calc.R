@@ -4,6 +4,9 @@
 plot_vars <- tree |>
   summarise(
     plot_calc_tree_count = n(),
+    plot_calc_basal_area_sum = sum(tree_basal_area),
+    plot_calc_biomass_ag_sum = sum(tree_biomass_ag),
+    plot_calc_biomass_total_sum = sum(tree_biomass_total),
     plot_calc_tree_density = sum(tree_weight),
     plot_calc_basal_area = sum(tree_basal_area * tree_weight),
     plot_calc_biomass_ag = sum(tree_biomass_ag * tree_weight),
@@ -12,9 +15,18 @@ plot_vars <- tree |>
   )
 
 ## Get full list of expected field plots ####
-plot_list <- categories$sampling_point_data |>
+plot_list <- anci$sampling_point |>
   filter(!is.na(level2_code)) |>
-  select(cluster_no = level1_code, plot_no = level2_code, plot_center_x = location_x, plot_center_y = location_y, stratum = forest_type)
+  select(
+    cluster_no = level1_code,
+    plot_no = level2_code,
+    plot_center_x = location_x,
+    plot_center_y = location_y,
+    stratum = forest_type
+  ) |>
+  mutate(across(c(cluster_no, plot_no), as.numeric))
+
+
 
 ## Retrieve accessibility ####
 cluster_access <- cluster |> select(cluster_no, cluster_access, cluster_access_label, cluster_info_stratum, cluster_info_region_label)

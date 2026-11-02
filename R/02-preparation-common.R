@@ -3,9 +3,39 @@
 ## This section combines OF Arena processing chain scripts
 ## On the long run, recommends to write proper scripts in the Arena processing chain
 
-## In 00-common
 
-tmp <- list()
+
+##
+## !!! Corrections !!! ######
+##
+
+table(anci$sampling_points$forest_type)
+table(plot_lulc$lulc_forest_label)
+table(cluster$cluster_info_stratum)
+
+anci$sampling_points <- anci$sampling_points |>
+  mutate(
+    forest_type = case_when(
+      forest_type == "close forest" ~ "closed forest",
+      TRUE ~ forest_type
+    )
+  )
+
+plot_lulc <- plot_lulc |>
+  mutate(
+    lulc_forest_label = case_when(
+      lulc_forest_label == "Close Forest" ~ "Closed Forest",
+      TRUE ~ lulc_forest_label
+    )
+  )
+
+cluster <- cluster |>
+  mutate(
+    cluster_info_stratum = case_when(
+      cluster_info_stratum == "close forest" ~ "closed forest",
+      TRUE ~ cluster_info_stratum
+    )
+  )
 
 ## 
 ## Defaults #####
@@ -43,6 +73,8 @@ defaults$plot_size_dbh20 <- 0.1  ## 20x50 m
 ##
 ## Tree weight ######
 ##
+
+tmp <- list()
 
 table(cluster$cluster_info_stratum, useNA = "ifany")
 
@@ -110,7 +142,7 @@ tree <- tree |>
 ##
 
 ## Plot starting point assumed at center
-tmp$sf_plot <- categories$sampling_point_data |>
+tmp$sf_plot <- anci$sampling_point |>
   filter(!is.na(level2_code)) |>
   select(cluster_no = level1_code, plot_no = level2_code, x = location_x, y = location_y) |>
   st_as_sf(coords = c("x", "y"), crs = 4326)
@@ -130,7 +162,11 @@ tmp$sf_plot <- categories$sampling_point_data |>
 #   geom_sf(data = sf_plot) +
 #   coord_sf(xlim = c(-17, -13), ylim = c(13, 14))
 
-tmp$plot_E <- terra::extract(anci$chave_E, terra::vect(tmp$sf_plot), bind = TRUE) |> as_tibble() |> rename(chaveE = E)
+tmp$plot_E <- terra::extract(anci$chave_E, terra::vect(tmp$sf_plot), bind = TRUE) |> 
+  as_tibble() |> 
+  rename(chaveE = E) |>
+  mutate(across(where(is.character), as.numeric))
+
 
 tree <- tree |>
   mutate(chaveE = NA) |>
@@ -143,9 +179,10 @@ tree <- tree |>
 ## Get GEZ to cluster level ######
 ##
 
-tmp$sf_cluster <- categories$sampling_point_data |>
+tmp$sf_cluster <- anci$sampling_point |>
   filter(is.na(level2_code)) |>
   select(cluster_no = level1_code, x = location_x, y = location_y) |>
+  mutate(cluster_no = as.numeric(cluster_no)) |>
   st_as_sf(coords = c("x", "y"), crs = 4326)
 
 ## Incomplete cause of uinaccessible plots
@@ -231,4 +268,36 @@ ph1_data <- ph1$cluster_harmo |>
     subpop = 1,
     stratum = ph1_stratum
   )
+
+table(tree$tree_status_label)
+
+
+## 
+## Split tables ######
+## 
+
+tree_bkp <- tree
+
+dw_standing <- tree |> filter(tree_status_label == "Dead standing tree")
+stump <- tree |> filter(tree_status_label == "Stump")
+tree <- tree |> filter(tree_status_label == "Live standing tree")
+
+## Growth forms that need specific allometries, separated from live trees by genus
+## Lists include West African genera not (yet) recorded in the data
+tmp$genus_bamboo   <- c("Oxytenanthera", "Bambusa")
+tmp$genus_liana    <- c("Saba", "Landolphia", "Paullinia", "Cissus", "Strophanthus", "Baissea", "Hippocratea", "Loeseneriella")
+tmp$genus_baobab   <- c("Adansonia")
+tmp$genus_mangrove <- c("Rhizophora", "Avicennia", "Laguncularia", "Conocarpus")
+tmp$genus_palm     <- c("Borassus", "Elaeis", "Phoenix", "Hyphaene", "Raphia", "Cocos")
+
+bamboo   <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_bamboo)
+liana    <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_liana)
+baobab   <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_baobab)
+mangrove <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_mangrove)
+palm     <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_palm)
+
+tree <- tree |>
+  filter(!word(tree_species_scientific_name) %in% c(
+    tmp$genus_bamboo, tmp$genus_liana, tmp$genus_baobab, tmp$genus_mangrove, tmp$genus_palm
+  ))
 
