@@ -28,6 +28,27 @@ tree <- tree |> mutate(
   )
 )
 
+##
+## tree Height class #######
+##
+
+tree <- tree |>
+  mutate(
+    tree_h_class = case_when(
+      tree_height <  5 ~ "00 - 4.9",
+      tree_height < 10 ~ "05 - 9.9",
+      tree_height < 15 ~ "10 - 14.9",
+      tree_height < 20 ~ "15 - 19.9",
+      tree_height < 25 ~ "20 - 24.9",
+      tree_height < 30 ~ "25 - 29.9",
+      tree_height < 35 ~ "30 - 34.9",
+      tree_height < 40 ~ "35 - 39.9",
+      tree_height < 45 ~ "40 - 44.9",
+      tree_height < 50 ~ "45 - 49.9",
+      TRUE ~ "50+"
+    )
+  )
+
 
 ##
 ## Tree Count ######
@@ -35,7 +56,7 @@ tree <- tree |> mutate(
 
 ## Remove trees with missing DBH or DBH < 10, move to 'common.R' ?
 summary(tree$tree_dbh)
-tree <- tree |> filter(!is.na(tree_dbh), tree_dbh >= 10)
+#tree <- tree |> filter(!is.na(tree_dbh), tree_dbh >= 10)
 
 tree$tree_count <- 1
 

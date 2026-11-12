@@ -358,11 +358,18 @@ tmp$genus_palm     <- c("Borassus", "Elaeis", "Phoenix", "Hyphaene", "Raphia", "
 bamboo   <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_bamboo)
 liana    <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_liana)
 baobab   <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_baobab)
-mangrove <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_mangrove)
+# mangrove <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_mangrove)
 palm     <- tree |> filter(word(tree_species_scientific_name) %in% tmp$genus_palm)
 
 tree <- tree |>
-  filter(!word(tree_species_scientific_name) %in% c(
-    tmp$genus_bamboo, tmp$genus_liana, tmp$genus_baobab, tmp$genus_mangrove, tmp$genus_palm
-  ))
+  filter(
+    !word(tree_species_scientific_name) %in%
+      c(
+        tmp$genus_bamboo,
+        tmp$genus_liana,
+        tmp$genus_baobab,
+        # tmp$genus_mangrove,
+        tmp$genus_palm
+      )
+  )
 
