@@ -9,20 +9,20 @@ tt <- plot_analysis |> filter(plot_access_lgl, is.na(lulc_forest))
 
 
 cluster_info <- plot_analysis |>
-  filter(plot_access_lgl, plot_no == 1) |>
+  filter(plot_access_lgl, !plot_virtual, plot_no == 1) |>
   select(
     cluster_no, stratum, cluster_center_x = plot_center_x, cluster_center_y = plot_center_y, 
     cluster_lulc_name = lulc_name, cluster_lulc_name_label = lulc_name_label
     )
   
 cluster_domain <- plot_analysis |>
-  filter(plot_access_lgl, plot_no == 1) |>
+  filter(plot_access_lgl, !plot_virtual, plot_no == 1) |>
   select(
     cluster_no, cluster_lulc_forest = lulc_forest, cluster_lulc_forest_label = lulc_forest_label
   )
 
 cluster_vars <- plot_analysis |>
-  filter(plot_access_lgl) |>
+  filter(plot_access_lgl, !plot_virtual) |>
   #filter(!(lulc_forest_label != "Non-forest" & plot_calc_biomass_ag == 0)) |>
   left_join(cluster_domain, by = join_by(cluster_no)) |>
   filter(lulc_forest_label == cluster_lulc_forest_label) |>
