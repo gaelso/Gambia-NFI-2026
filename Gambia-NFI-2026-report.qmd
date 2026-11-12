@@ -1,6 +1,7 @@
 ---
 title: "Gambia NFI 2026"
 format: html
+bibliography: references.bib
 editor: visual
 ---
 
@@ -27,72 +28,194 @@ editor: visual
 **3.5 Protective Functions of Forests**\
 3.5.1 Soil Condition and Characteristics
 
+# Methods
 
+## Sampling design and estimation
+
+The NFI follows a two-phase design, also called double sampling for stratification [@cochran1977, chapter 12]:
+
+- **Phase 1** is a large sample of points interpreted on high-resolution imagery in Collect Earth Online (CEO). Each point is classified into a stratum. Phase 1 gives the weight, and so the area, of each stratum.
+- **Phase 2** is a subsample of the phase 1 points, selected within each stratum and visited in the field as clusters of plots. Phase 2 provides the tree measurements and the land use and land cover (LULC) observed on the ground.
+
+The strata and the reporting domains are two different classifications:
+
+- The **stratum** $h$ is the phase 1 class. It is part of the design and is never changed after selection, even when the field crew observes a different land cover. Each cluster keeps the stratum it was selected in.
+- The **domain** $d$ is the forest type observed in the field (closed, open and mangrove forest, and non-forest). Estimates are reported by domain.
+
+Phase 2 corrects the phase 1 classification through the share of each domain within each stratum. For example, part of the area classified as closed forest in phase 1 is found to be open forest or non-forest in the field. That area, and the biomass measured on it, is attributed to the domain observed on the ground, and weighted by the stratum it was selected in.
+
+The estimation follows the steps below.
+
+### Step 1: Phase 1 stratum weights and areas
+
+With $N'$ phase 1 points in the country and $N'_h$ points classified in stratum $h$:
+
+$$W_h = \frac{N'_h}{N'}, \qquad A_h = A \, W_h$$
+
+where $A$ is the land area of the country (ha) and $A_h$ the area of stratum $h$. The four strata are closed forest, open forest, mangrove forest and non-forest. The weights $W_h$ are computed over all strata, including strata without phase 2 clusters, so that they sum to 1.
+
+### Step 2: Phase 2 selection
+
+In each forest stratum, $n_h$ phase 1 points are selected as phase 2 cluster centres. Clusters are the primary sampling units (PSU). They have 5 plots, or 3 plots in mangrove forest, which are the secondary sampling units. The non-forest stratum is not sampled in phase 2 (see Step 9).
+
+### Step 3: Tree level
+
+Each tree $k$ gets an expansion factor $EF_k$ from the nested plot design:
+
+$$EF_k =
+\begin{cases}
+1 / 0.04 & \text{if } 10 \le D_k < 20 \text{ cm (20 × 20 m plot)} \\
+1 / 0.1  & \text{if } D_k \ge 20 \text{ cm (20 × 50 m plot)}
+\end{cases}$$
+
+The tree attribute $y_k$ is, for example, aboveground biomass (t) from @chave2014, using the tree height $H_k$. Missing heights are predicted with a local height-diameter model, a Curtis model with forest type fixed effects and cluster random effects, the form selected for Sudanian savanna woodlands by @valbuena2016.
+
+### Step 4: Plot level
+
+For plot $j$ of cluster $i$, with measured area $a_{ij}$ (0.1 ha when accessible, 0 when not accessible):
+
+$$y_{ijd} = a_{ij} \sum_{k \in (ij, d)} y_k \, EF_k, \qquad x_{ijd} = a_{ij} \sum_{s \in (ij, d)} p_{ijs}$$
+
+- $y_{ijd}$ is the plot total of the attribute for the part of the plot in domain $d$. Each tree is recorded in the LULC section $s$ it stands in. The expansion factors scale the small trees of the 0.04 ha subplot up to the full plot.
+- $x_{ijd}$ is the plot area in domain $d$, where $p_{ijs}$ is the area share of LULC section $s$ recorded in the field. A plot that overlaps several forest types is split between domains. When the recorded percentages of a plot do not add up to 100%, they are rescaled to 100%. Accessible plots without a LULC record are treated as non-forest.
+
+### Step 5: Cluster level
+
+Plot values are summed within each cluster:
+
+$$y_{id} = \sum_j y_{ijd}, \qquad x_{id} = \sum_j x_{ijd}, \qquad a_i = \sum_j a_{ij}$$
+
+### Step 6: Within-stratum estimates
+
+For each stratum $h$ and domain $d$, the per-hectare value and the domain share are ratios of sums over the $n_h$ clusters:
+
+$$\bar{y}_{hd} = \frac{\sum_{i=1}^{n_h} y_{id}}{\sum_{i=1}^{n_h} a_i}, \qquad
+\bar{x}_{hd} = \frac{\sum_{i=1}^{n_h} x_{id}}{\sum_{i=1}^{n_h} a_i}$$
+
+$\bar{x}_{hd}$ is the share of stratum $h$ found in domain $d$ in the field. It is the phase 2 correction of the phase 1 strata. $\bar{y}_{hd}$ is the amount of the attribute in domain $d$ per hectare of stratum $h$.
+
+### Step 7: Combining strata
+
+The stratum estimates are weighted by the phase 1 weights:
+
+$$\bar{Y}_d = \sum_h W_h \, \bar{y}_{hd}, \qquad \bar{X}_d = \sum_h W_h \, \bar{x}_{hd}$$
+
+$\bar{X}_d$ is the share of the country in domain $d$, and $\bar{Y}_d$ the attribute in domain $d$ per hectare of country.
+
+### Step 8: Domain estimates
+
+The per-hectare value in domain $d$ is a ratio estimator, and the domain area and total follow from it:
+
+$$\hat{R}_d = \frac{\bar{Y}_d}{\bar{X}_d}, \qquad
+\hat{A}_d = A \, \bar{X}_d, \qquad
+\hat{Y}_d = A \, \bar{Y}_d = \hat{R}_d \, \hat{A}_d$$
+
+For example, $\hat{R}_d$ is the aboveground biomass of closed forest in t/ha, $\hat{A}_d$ the area of closed forest in ha, and $\hat{Y}_d$ its total biomass in t.
+
+### Step 9: Strata without phase 2 sample
+
+The non-forest stratum has no phase 2 clusters. Each of its phase 1 points is added as a virtual plot, accessible and measured as non-forest with no trees, so for this stratum $\bar{x}_{hd} = 1$ for the Non-forest domain, 0 for the forest domains, and $\bar{y}_{hd} = 0$. The domain areas then add up to the country area. This assumes the non-forest stratum contains no forest and no biomass. It covers about 60% of the phase 1 points, so trees outside forest and forest patches missed in phase 1 are not included in the estimates. Visiting a subsample of non-forest points in future cycles would remove this assumption.
+
+### Step 10: Variance
+
+Within stratum $h$, the variance between clusters of the ratio $\bar{y}_{hd}$ is:
+
+$$s^2_{y,hd} = \frac{1}{n_h - 1} \sum_{i=1}^{n_h} \frac{\left( y_{id} - \bar{y}_{hd} \, a_i \right)^2}{\bar{a}_h^2},
+\qquad \bar{a}_h = \frac{1}{n_h} \sum_{i=1}^{n_h} a_i$$
+
+The variance of $\bar{Y}_d$ combines the phase 2 sampling error within strata and the phase 1 error in the stratum weights:
+
+$$v(\bar{Y}_d) = \sum_h \left[
+W_h \, \frac{N'_h - 1}{N' - 1} \, \frac{s^2_{y,hd}}{n_h}
++ \frac{W_h}{N' - 1} \left( \bar{y}_{hd} - \bar{Y}_d \right)^2
+\right]$$
+
+$v(\bar{X}_d)$ and the covariance $c(\bar{X}_d, \bar{Y}_d)$ are computed in the same way, replacing $y$ with $x$, and the squares with products of the $x$ and $y$ terms. The variance of the ratio is then:
+
+$$v(\hat{R}_d) = \frac{v(\bar{Y}_d) + \hat{R}_d^2 \, v(\bar{X}_d) - 2 \hat{R}_d \, c(\bar{X}_d, \bar{Y}_d)}{\bar{X}_d^2}$$
+
+and $v(\hat{A}_d) = A^2 \, v(\bar{X}_d)$, $v(\hat{Y}_d) = A^2 \, v(\bar{Y}_d)$.
+
+### Step 11: Confidence intervals
+
+Uncertainty is reported as the margin of error at the 90% confidence level, in absolute terms and as a percentage of the estimate:
+
+$$ME_d = t_{1 - \alpha/2, \; n - H} \, \sqrt{v(\hat{R}_d)}, \qquad
+U_d = \frac{ME_d}{\hat{R}_d} \times 100$$
+
+with $\alpha = 0.1$, $n = \sum_h n_h$ the number of phase 2 clusters and $H$ the number of sampled strata.
+
+### Assumptions
+
+- **Inaccessible plots** have $a_{ij} = 0$ and are left out of both the numerator and the denominator of the ratios. This assumes that, within a stratum, they are similar to the accessible plots.
+- **Trees outside the live tree allometry** (stumps, dead standing trees, and mangroves, palms and baobabs with their own equations) need their own attribute values, which are then added to $y_{ijd}$ in Step 4. Until then, their biomass is not included.
 
 # Results and Discussion
-
 
 ## Extent of Forest Resources
 
 ### Forest Area and Distribution
-table with area of forest type by country / region
 
+<!-- table with area of forest type by country / region -->
 
 ### Change in Forest Extent
-Estimating change requires re-viositing the CEO plots of NFI phase 1 and record year of last change, or all changes over a period of 5-10 years.
+
+<!-- Estimating change requires re-viositing the CEO plots of NFI phase 1 and record year of last change, or all changes over a period of 5-10 years. -->
 
 ## Biological Diversity
 
-
 ### Tree Species Composition and Diversity
-IVI, Shannon index keep the top 10 or 20. We can do it by species and genus and family
+
+<!-- IVI, Shannon index keep the top 10 or 20. We can do it by species and genus and family -->
 
 ### Rare, Threatened and Endangered Tree Species
-Check the whole species list against the IUCN checklist.
 
+<!-- Check the whole species list against the IUCN checklist. -->
 
 ### Wildlife Presence and Occurrence
-How many plots have sign of wildlife / make a ratio forest type
-How impoortant are specific wildlife species (Shannon index)
 
+<!-- How many plots have sign of wildlife / make a ratio forest type / How important are specific wildlife species (Shannon index) -->
 
 ## Forest Health and Vitality
 
-
 ### Tree Health and Condition
-percentage of healthy / damage trees. 
+
+<!-- percentage of healthy / damage trees. -->
 
 ### Forest Disturbance
-how many plots with forest disturbances. table with disturbance cat, spread by region
 
+<!-- how many plots with forest disturbances. table with disturbance cat, spread by region -->
 
 ### Deadwood and Litter
-Litter: N plots per forest type for litter depth and composition
+
+<!-- Litter: N plots per forest type for litter depth and composition -->
 
 ### Forest Structure
-Tree density per diameter class
 
-tree height classes to be check (0-5, 5-10, etc) national forest type and region and regionxforest type
+<!-- Tree density per diameter class -->
+
+<!-- tree height classes to be check (0-5, 5-10, etc) national forest type and region and regionxforest type -->
 
 ### Forest Regeneration
-seedling and sapling count per ha for region / foprest type cross.
 
-Importance of regeneration species distribution and density
+<!-- Seedling and sapling count per ha for region / foprest type cross. -->
 
+<!-- Importance of regeneration species distribution and density -->
 
 ## Productive Functions of Forests
 
 ### Non-Timber Forest Products
-table number of plots that are abundant / rare for medicinal etc. per forest type/ region / nationally
 
+<!-- table number of plots that are abundant / rare for medicinal etc. per forest type/ region / nationally -->
 
 ### Forest Biomass and Carbon Stocks
-Ok
 
+Ok
 
 ## Protective Functions of Forests
 
-
 ### Soil Condition and Characteristics
-Leave for now
-soil descriptive per forest type. 
+
+<!-- Leave for now / soil descriptive per forest type. -->
+
+# References
