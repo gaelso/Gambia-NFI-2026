@@ -30,9 +30,9 @@ fig$i_biomass <- tab$i_biomass$forest_type_region |>
   geom_errorbar(aes(ymin = pmax(agb_ha - agb_ha_me, 0), ymax = agb_ha + agb_ha_me), width = 0.2) +
   geom_text(aes(y = coalesce(agb_ha + agb_ha_me, agb_ha), label = paste0("n=", n_pp)), vjust = -0.5, size = 2.5) +
   scale_fill_manual(values = defaults$pal_ftype, guide = "none") +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
   facet_wrap(~forest_type, nrow = 1, scales = "free_x") +
-  labs(x = "", y = "Aboveground biomass (t/ha)", caption = "Error bars: 90% confidence interval, n = number of plots")
+  labs(x = "", y = "Aboveground biomass (t/ha)", caption = "Error bars: 90% confidence interval, n = number of plots") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 fig$i_biomass
 
 ggsave("results/figures/05i_biomass.png", fig$i_biomass, width = 24, height = 10, units = "cm", dpi = 300)

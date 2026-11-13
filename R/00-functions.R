@@ -21,6 +21,8 @@
 ##    - SSU: Subplot ID (see .SSU),
 ##    - class_d   : domain of interest, for example forest classes.
 ##    - access    : accessibility of each subplot (TRUE/FALSE)
+##    - virtual   : (optional) TRUE for virtual PSUs added for strata without phase 2 sample (phase 1 points with
+##                  assumed values). They count in the estimates but not in the degrees of freedom.
 ##    - An attribute x, at subplot level, denominator of the Ratio, R = Y / X (See .attr_x). 
 ##      It normally is the maximum measured area (in ha) at subplot level, i.e. 
 ##      largest nested measurement level for the attribute of interest,
@@ -32,6 +34,16 @@
 ## .attr_x: attribute of interest (in subplot_table), denominator of the Ratio. Most often the largest measurement area at the subplot or subplot x lcs level.
 ## .aoi_area: total area of the area of interest (in ha). In case of NFIs, country area.
 
+
+## Degrees of freedom per subpop for the t quantile: n - H, with n the accessible phase 2 field PSUs and H the
+## strata with field PSUs. Virtual PSUs (column 'virtual', if any) are not part of the phase 2 sample.
+nfi_df_subpop <- function(.ph2_sp){
+  ph2_field <- .ph2_sp |> filter(access)
+  if ("virtual" %in% names(ph2_field)) ph2_field <- ph2_field |> filter(!virtual)
+  ph2_field |>
+    distinct(subpop, stratum, PSU) |>
+    summarise(subpop_df = n_distinct(PSU) - n_distinct(stratum), .by = subpop)
+}
 
 nfi_aggregate <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_area){
   
@@ -54,7 +66,7 @@ nfi_aggregate <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_are
   
   ## + Prepare constants ####
   Ntot  <- nrow(.ph1_df)
-  Nstrat <- length(unique(.ph2_sp$stratum))
+  df_subpop <- nfi_df_subpop(.ph2_sp)
   
   vec_subpop  <- .ph2_sp |> pull(subpop) |> unique() |> sort()
   ## All phase 1 strata, including strata without phase 2 sample: they keep their weight Wh with zero values,
@@ -205,12 +217,13 @@ nfi_aggregate <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_are
       subpop_A       = sum(Ah),
       .groups = "drop"
     ) |>
+    left_join(df_subpop, by = join_by(subpop)) |>
     mutate(
       subpop_W      = subpop_N / Ntot,
       subpop_Rd     = if_else(subpop_mean_xd > 0, subpop_mean_yd / subpop_mean_xd, 0),
       subpop_Rd_var = if_else(subpop_mean_xd > 0, abs((subpop_var_yd + subpop_Rd^2*subpop_var_xd - 2*subpop_Rd*subpop_covar_xdyd) / (subpop_mean_xd^2)), 0),
       subpop_Rd_se  = sqrt(subpop_Rd_var),
-      subpop_Rd_me  = qt(1-0.1/2, df = subpop_n - Nstrat) * subpop_Rd_se,
+      subpop_Rd_me  = qt(1-0.1/2, df = subpop_df) * subpop_Rd_se,
       subpop_Rd_mep = if_else(subpop_Rd > 0, round(subpop_Rd_me / subpop_Rd * 100, 2), 0)
     ) |>
     mutate(attr = as_label(attr_y)) |>
@@ -218,7 +231,7 @@ nfi_aggregate <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_are
   
   
   ## Totals ####
-  DF_all <- sum(unique(subpop_d$subpop_n)) - length(unique(subpop_d$subpop_n))*Nstrat
+  DF_all <- sum(df_subpop$subpop_df)
   
   totals_d <- subpop_d |>
     group_by(!!class_d) |>
@@ -303,7 +316,7 @@ nfi_aggregate2 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
 
   ## + Prepare constants ####
   Ntot   <- nrow(.ph1_df)
-  Nstrat <- length(unique(.ph2_sp$stratum))
+  df_subpop <- nfi_df_subpop(.ph2_sp)
   t_crit <- \(df) qt(1 - .alpha/2, df = df)
 
   vec_subpop  <- .ph2_sp |> pull(subpop) |> unique() |> sort()
@@ -381,7 +394,7 @@ nfi_aggregate2 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
   subpop_stratum_a <- plot_a |>
     summarise(sum_ai = sum(ai), sum_ai_sq = sum(ai^2), .by = c(subpop, stratum))
 
-  DF_all <- sum(ss_ph2_totals$n) - nrow(ss_ph2_totals) * Nstrat
+  DF_all <- sum(df_subpop$subpop_df)
 
 
   ## Estimation for a plot table (PSU, subpop, stratum, dom, sub, yid, xid, ai) ####
@@ -444,12 +457,13 @@ nfi_aggregate2 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
         subpop_A       = sum(Ah),
         .by = c(dom, sub, subpop)
       ) |>
+      left_join(df_subpop, by = join_by(subpop)) |>
       mutate(
         subpop_W      = subpop_N / Ntot,
         subpop_Rd     = if_else(subpop_mean_xd > 0, subpop_mean_yd / subpop_mean_xd, 0),
         subpop_Rd_var = if_else(subpop_mean_xd > 0, abs((subpop_var_yd + subpop_Rd^2*subpop_var_xd - 2*subpop_Rd*subpop_covar_xdyd) / (subpop_mean_xd^2)), 0),
         subpop_Rd_se  = sqrt(subpop_Rd_var),
-        subpop_Rd_me  = t_crit(subpop_n - Nstrat) * subpop_Rd_se,
+        subpop_Rd_me  = t_crit(subpop_df) * subpop_Rd_se,
         subpop_Rd_mep = if_else(subpop_Rd > 0, round(subpop_Rd_me / subpop_Rd * 100, 2), 0)
       )
 

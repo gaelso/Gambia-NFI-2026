@@ -64,6 +64,23 @@ if (!"wsg_estimates.rda" %in% list.files("data-anci")) {
 }
 
 
+## + IUCN Red List of Threatened Species ####
+
+## Full Red List as a Darwin Core archive hosted by GBIF (CC BY 4.0), updated with each Red List release.
+## https://www.gbif.org/dataset/19491596-35ae-4a91-9a98-85cf505f1bd3
+## Delete 'data-anci/iucn' to download the latest version.
+if (!"iucn/taxon.txt" %in% list.files("data-anci", recursive = TRUE)) {
+  options(timeout = max(600, getOption("timeout")))
+  download.file(
+    url = "https://hosted-datasets.gbif.org/datasets/iucn/iucn-latest.zip",
+    destfile = file.path("data-anci", "iucn.zip"),
+    mode = "wb"
+  )
+  unzip(zipfile = "data-anci/iucn.zip", exdir = "data-anci/iucn")
+  unlink("data-anci/iucn.zip")
+}
+
+
 ## + FAO GEZ for IPCC default values ######
 
 ## Download manually into "data-anci" and unzip. Expected path: "data-anci/gez2010/gez_2010_wgs84.shp"

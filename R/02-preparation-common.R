@@ -38,7 +38,7 @@ cluster <- cluster |>
   )
 
 ## 
-## Defaults #####
+## Defaults ######
 ## 
 
 defaults <- list()
@@ -67,6 +67,9 @@ defaults$main_river_area <- defaults$country_area - defaults$country_area_nowate
 ## Plot size 
 defaults$plot_size_dbh10 <- 0.04 ## 20x20 m 
 defaults$plot_size_dbh20 <- 0.1  ## 20x50 m
+
+## Species names not identified
+defaults$species_unidentified <- c("Unknown", "Unlisted")
 
 
 
@@ -167,38 +170,95 @@ tmp$genus_list   <- tmp$species_list |> word() |> unique()
 tmp$wd_species <- anci$wood_density |> 
   filter(species %in% tmp$species_list) |>
   arrange(species) |>
-  select(tree_species_scientific_name = species, tree_species_wood_density = wsg)
+  select(tree_species_scientific_name = species, wood_density_species = wsg)
 
 tmp$wd_genus <- anci$wood_density |> 
   filter(genus %in% tmp$genus_list, is.na(species)) |>
-  select(tree_genus = genus, tree_genus_wood_density = wsg)
+  select(tree_genus_scientific_name = genus, wood_density_genus = wsg)
 
 tree <- tree |>
   mutate(
-    tree_genus = word(tree_species_scientific_name),
-    tree_species_wood_density = NA,
-    tree_genus_wood_density = NA,
-    tree_default_wood_density = defaults$WD
+    tree_genus_scientific_name = word(tree_species_scientific_name),
+    wood_density_species = NA,
+    wood_density_genus = NA,
+    wood_density_default = defaults$WD
   ) |>
   left_join(tmp$wd_species, by = join_by(tree_species_scientific_name), suffix = c("_rm", "")) |>
-  left_join(tmp$wd_genus, by = join_by(tree_genus), suffix = c("_rm", "")) |>
+  left_join(tmp$wd_genus, by = join_by(tree_genus_scientific_name), suffix = c("_rm", "")) |>
   select(-ends_with("_rm")) |>
   mutate(
     tree_wood_density = case_when(
-      !is.na(tree_species_wood_density) ~ tree_species_wood_density,
-      !is.na(tree_genus_wood_density) ~ tree_genus_wood_density,
-      TRUE ~ tree_default_wood_density
+      !is.na(wood_density_species) ~ wood_density_species,
+      !is.na(wood_density_genus) ~ wood_density_genus,
+      TRUE ~ wood_density_default
     ),
     tree_wood_density_level = case_when(
-      !is.na(tree_species_wood_density) ~ "species",
-      !is.na(tree_genus_wood_density) ~ "genus",
+      !is.na(wood_density_species) ~ "species",
+      !is.na(wood_density_genus) ~ "genus",
       TRUE ~ "default"
     )
   )
 
-## Remove intermediate columns
+## Remove intermediate columns. tree_genus_scientific_name: genus of tree_species_scientific_name for WD matching (tree_genus from the report names added below)
 tree <- tree |>
-  select(-tree_genus, -tree_species_wood_density, -tree_genus_wood_density, -tree_default_wood_density)
+  select(-tree_genus_scientific_name, -wood_density_species, -wood_density_genus, -wood_density_default)
+
+
+
+##
+## Add species taxonomy and IUCN Red List category to tree ######
+##
+
+## IUCN Red List category from anci$iucn (see 00-setup.R), matched on genus + species epithet of the
+## reported names (tree_species_scientific_name_report, current accepted names): accepted species first, then
+## infraspecific taxa and synonyms. Not matched: 'Genus sp.', hybrids and species not assessed by IUCN.
+## Family: IUCN family of the species, else of the genus, else from the wood density database, else set manually.
+
+tmp$iucn_species <- anci$iucn |>
+  arrange(iucn_status != "accepted", iucn_rank != "species") |>
+  distinct(iucn_name, .keep_all = TRUE)
+
+tmp$iucn_genus_family <- anci$iucn |>
+  filter(iucn_status == "accepted", !is.na(iucn_family)) |>
+  distinct(tree_genus = word(iucn_name, 1), iucn_genus_family = iucn_family) |>
+  distinct(tree_genus, .keep_all = TRUE)
+
+tmp$wd_genus_family <- anci$wood_density |>
+  distinct(tree_genus = genus, wd_family = family) |>
+  distinct(tree_genus, .keep_all = TRUE)
+
+tmp$family_manual <- c(Malacantha = "Sapotaceae")
+
+tmp$species_info <- tree |>
+  distinct(tree_species_name = tree_species_scientific_name_report) |>
+  filter(!is.na(tree_species_name), !tree_species_name %in% defaults$species_unidentified) |>
+  mutate(
+    tree_genus = word(tree_species_name, 1),
+    iucn_name = word(tree_species_name, 1, 2)
+  ) |>
+  left_join(select(tmp$iucn_species, iucn_name, iucn_family, iucn_code, iucn_category), by = join_by(iucn_name)) |>
+  left_join(tmp$iucn_genus_family, by = join_by(tree_genus)) |>
+  left_join(tmp$wd_genus_family, by = join_by(tree_genus)) |>
+  mutate(
+    tree_family = coalesce(iucn_family, iucn_genus_family, wd_family, unname(tmp$family_manual[tree_genus])),
+    tree_iucn_code = iucn_code,
+    tree_iucn_category = iucn_category
+  ) |>
+  select(tree_species_name, tree_genus, tree_family, tree_iucn_code, tree_iucn_category)
+
+## Checks: all species with a family
+tmp$species_info |> filter(is.na(tree_family))
+table(tmp$species_info$tree_iucn_code, useNA = "ifany")
+
+tmp$species_cols <- setdiff(names(tmp$species_info), "tree_species_name")
+
+tree <- tree |>
+  mutate(
+    tree_species_name = tree_species_scientific_name_report,
+    !!!set_names(rep(list(NA), length(tmp$species_cols)), tmp$species_cols)
+  ) |>
+  left_join(tmp$species_info, by = join_by(tree_species_name), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm"))
 
 
 

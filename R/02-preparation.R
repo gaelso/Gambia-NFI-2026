@@ -156,16 +156,34 @@ tree$tree_height_model <- coalesce(
 tree |>
   ggplot(aes(x = tree_dbh)) +
   geom_point(aes(y = tree_height)) +
-  geom_line(aes(y = tree_height_chave, color = as.character(clust)), linetype = "dotted") +
+  geom_line(
+    aes(y = tree_height_chave, color = as.character(cluster_no)),
+    linetype = "dotted"
+  ) +
   geom_line(aes(y = tree_height_model, color = as.character(cluster_no))) +
   facet_wrap(~cluster_no) +
   theme(legend.position = "none")
 
-## + Corrected heights ######
+tree |>
+  ggplot(aes(x = tree_dbh)) +
+  geom_point(aes(y = tree_height)) +
+  geom_line(
+    aes(y = tree_height_chave, color = as.character(plot_lulc_forest_label)),
+    linetype = "dotted"
+  ) +
+  geom_line(aes(
+    y = tree_height_model,
+    color = as.character(plot_lulc_forest_label)
+  )) +
+  facet_wrap(~cluster_no) +
+  theme(legend.position = "bottom") + 
+  labs(color = "LU")
 
-## Stumps keep their recorded height (stump height), the model predicts total tree height
-## Missing heights and heights outside the prediction interval replaced with the model height
-table(tree$tree_status_label)
+  ## + Corrected heights ######
+
+  ## Stumps keep their recorded height (stump height), the model predicts total tree height
+  ## Missing heights and heights outside the prediction interval replaced with the model height
+  table(tree$tree_status_label)
 
 ## Measured heights trusted (screened in the data cleaning), only missing heights replaced with the local model
 tree <- tree |>
@@ -248,6 +266,7 @@ tree <- tree |>
 ## 
 
 tree$tree_biomass_total <- tree$tree_biomass_bg + tree$tree_biomass_ag
+
 
 
 ##

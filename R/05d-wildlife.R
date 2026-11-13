@@ -53,10 +53,9 @@ fig$d_wildlife_region <- tab$d_wildlife$forest_type_region |>
   geom_tile(color = "white", linewidth = 1) +
   geom_text(aes(label = paste0(n_plots, "/", n_plots_total)), size = 2.5) +
   scale_fill_gradientn(colors = c("#cde2fb", "#86b6ef", "#3987e5", "#1c5cab")) +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
   facet_wrap(~forest_type) +
   labs(x = "", y = "", fill = "Plots (%)", caption = "Labels: plots with signs / accessible plots") +
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))
 fig$d_wildlife_region
 
 ggsave("results/figures/05d_wildlife.png", fig$d_wildlife, width = 18, height = 11, units = "cm", dpi = 300)

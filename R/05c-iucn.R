@@ -1,7 +1,7 @@
 
 ## c. Species in the IUCN Red List threatened categories ####
 
-## IUCN category from GBIF (see 05-double-sampling.R). Threatened = CR (Critically Endangered),
+## IUCN category from the IUCN Red List (anci$iucn, see 05-double-sampling.R). Threatened = CR (Critically Endangered),
 ## EN (Endangered) and VU (Vulnerable). Occurrence = number of accessible field plots with at least one
 ## live tree of the species, forest type of the plot main LULC section.
 

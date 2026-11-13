@@ -6,7 +6,8 @@ results/
 *.zip
 *.DS_Store
 .vscode/
-
+*.docx
+*.html
 
 # History files
 .Rhistory
@@ -58,3 +59,6 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .positai
+
+/.quarto/
+**/*.quarto_ipynb

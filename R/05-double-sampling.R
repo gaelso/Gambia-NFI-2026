@@ -20,6 +20,7 @@ ph2_data <- plot_lulc_analysis |>
     SSU = paste(plot_no, lulc_id, sep = "_"),
     class_d = lulc_forest_label,
     access = plot_access_lgl,
+    virtual = plot_virtual,
     ## Section area (ha): plot area x section share
     ssu_area = defaults$plot_size_dbh20 * lulc_share,
     subpop = 1,
@@ -40,7 +41,6 @@ vec_levels <- c(country = "dom_country", forest_type = "dom_ftype", forest_type_
 defaults$ftype_levels  <- c("All", "Closed Forest", "Open Forest", "Mangrove Forest", "Non-forest")
 defaults$region_levels <- c("All", "West Coast", "North Bank", "Lower River", "Central River", "Upper River")
 defaults$pal_ftype     <- c("Closed Forest" = "#1b5e20", "Open Forest" = "#8bc34a", "Mangrove Forest" = "#00838f", "Non-forest" = "#bdbdbd")
-defaults$species_unidentified <- c("Unknown", "Unlisted")
 
 ## Forest type and region of each domain, to add to nfi_aggregate_levels() outputs
 domain_lookup <- bind_rows(
@@ -57,76 +57,6 @@ domain_lookup <- bind_rows(
 plot_info <- plot_analysis |>
   filter(plot_access_lgl, !plot_virtual) |>
   select(cluster_no, plot_no, forest_type = lulc_forest_label, region = plot_region)
-
-
-
-##
-## Species taxonomy and IUCN Red List category ######
-##
-
-## Family from the GBIF backbone taxonomy, and IUCN Red List category from the GBIF species API (no token needed).
-## Species names as reported (tree_species_scientific_name_report, current accepted names).
-## Cached in data-anci, delete 'data-anci/gbif_species.csv' to update.
-
-if (!"gbif_species.csv" %in% list.files("data-anci")) {
-
-  tmp$gbif_get <- \(url) tryCatch(jsonlite::fromJSON(url), error = \(e) list())
-  tmp$or_na    <- \(x) if (is.null(x)) NA_character_ else as.character(x)
-
-  tmp$gbif_species <- tree |>
-    distinct(tree_species_name = tree_species_scientific_name_report) |>
-    filter(!is.na(tree_species_name), !tree_species_name %in% defaults$species_unidentified) |>
-    mutate(gbif = map(tree_species_name, \(x) {
-      m <- tmp$gbif_get(paste0("https://api.gbif.org/v1/species/match?kingdom=Plantae&name=", URLencode(x)))
-      iucn <- if (!is.null(m$speciesKey)) {
-        tmp$gbif_get(paste0("https://api.gbif.org/v1/species/", m$speciesKey, "/iucnRedListCategory"))
-      } else list()
-      tibble(
-        gbif_name     = tmp$or_na(m$scientificName),
-        gbif_rank     = tmp$or_na(m$rank),
-        gbif_match    = tmp$or_na(m$matchType),
-        gbif_genus    = tmp$or_na(m$genus),
-        gbif_family   = tmp$or_na(m$family),
-        iucn_code     = tmp$or_na(iucn$code),
-        iucn_category = tmp$or_na(iucn$category)
-      )
-    })) |>
-    unnest(gbif) |>
-    mutate(gbif_date = Sys.Date())
-
-  write_csv(tmp$gbif_species, "data-anci/gbif_species.csv")
-}
-
-anci$gbif_species <- read_csv("data-anci/gbif_species.csv", show_col_types = FALSE)
-
-## Genus from the name, family from GBIF or from the wood density database genus list
-tmp$species_info <- anci$gbif_species |>
-  mutate(tree_genus = word(tree_species_name, 1)) |>
-  left_join(
-    anci$wood_density |> distinct(tree_genus = genus, wd_family = family) |> distinct(tree_genus, .keep_all = TRUE),
-    by = join_by(tree_genus)
-  ) |>
-  mutate(
-    tree_family = coalesce(gbif_family, wd_family),
-    ## Species level categories only (not for 'Genus sp.')
-    tree_iucn_code = if_else(gbif_rank %in% c("SPECIES", "SUBSPECIES", "VARIETY"), iucn_code, NA_character_),
-    tree_iucn_category = if_else(gbif_rank %in% c("SPECIES", "SUBSPECIES", "VARIETY"), iucn_category, NA_character_)
-  ) |>
-  select(tree_species_name, tree_genus, tree_family, tree_iucn_code, tree_iucn_category)
-
-## Checks: all species with a family
-tmp$species_info |> filter(is.na(tree_family))
-table(tmp$species_info$tree_iucn_code, useNA = "ifany")
-
-tmp$species_cols <- setdiff(names(tmp$species_info), "tree_species_name")
-
-tree <- tree |>
-  mutate(
-    tree_species_name = tree_species_scientific_name_report,
-    !!!set_names(rep(list(NA), length(tmp$species_cols)), tmp$species_cols)
-  ) |>
-  left_join(tmp$species_info, by = join_by(tree_species_name), suffix = c("_rm", "")) |>
-  select(-ends_with("_rm"))
 
 
 

@@ -75,10 +75,10 @@ fig$e_condition <- bind_rows(tab$e_condition$forest_type, tab$e_condition$forest
   ggplot(aes(x = region, y = pct, fill = tree_condition_overall_label)) +
   geom_col(width = 0.8) +
   scale_fill_manual(values = tmp$pal_condition) +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-  facet_wrap(~forest_type) +
+  facet_wrap(~forest_type, scales = "free_x") +
+  guides(fill = guide_legend(nrow = 2)) +
   labs(x = "", y = "Share of trees (%)", fill = "", caption = "All: forest type level estimate") +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1))
 fig$e_condition
 
 ggsave("results/figures/05e_condition.png", fig$e_condition, width = 24, height = 11, units = "cm", dpi = 300)
