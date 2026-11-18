@@ -1,0 +1,101 @@
+::: landscape-annex
+
+# Annex 1: Results by forest type and region {.unnumbered}
+
+Estimates for each forest type within each administrative region. Many domains have few plots and the estimates are indicative only. ME is not given for domains with a single plot. Definitions are in @sec-results.
+
+## Forest area {.unnumbered}
+
+```{r}
+#| results: asis
+print_annex(tab$a_area, "area", "Area of forest types")
+```
+
+## Tree species composition and diversity {.unnumbered}
+
+```{r}
+#| results: asis
+print_annex(tab$b_ivi_species, "ivi-species", "Top 20 species by Importance Value Index", .drop = c("n_pp", "density_mep", "n_sections"))
+print_annex(tab$b_ivi_genus, "ivi-genus", "Top 10 genera by Importance Value Index", .drop = c("n_pp", "density_mep", "n_sections"))
+print_annex(tab$b_ivi_family, "ivi-family", "Top 10 families by Importance Value Index", .drop = c("n_pp", "density_mep", "n_sections"))
+print_annex(tab$b_shannon, "shannon", "Shannon diversity index")
+```
+
+## Rare, threatened and endangered tree species {.unnumbered}
+
+```{r}
+#| results: asis
+print_annex(tab$c_iucn, "iucn", "Tree species in the IUCN Red List threatened categories", .drop = "tree_iucn_category")
+```
+
+## Wildlife presence and occurrence {.unnumbered}
+
+```{r}
+#| label: fig-wildlife-region
+#| fig-cap: "Share of plots with signs of wildlife, by wildlife type, forest type and region. Labels: plots with signs / accessible plots."
+#| fig-width: 9.5
+#| fig-height: 5.5
+fig$d_wildlife_region
+```
+
+```{r}
+#| results: asis
+print_annex(tab$d_wildlife, "wildlife", "Plots with signs of wildlife, by wildlife type")
+print_annex(tab$d_wildlife_sign, "wildlife-sign", "Plots with signs of wildlife, by type of sign")
+```
+
+## Tree health and condition {.unnumbered}
+
+```{r}
+#| results: asis
+print_annex(tab$e_health, "health", "Density of healthy and damaged trees")
+print_annex(tab$e_condition, "condition", "Tree density by condition class")
+```
+
+## Forest disturbance {.unnumbered}
+
+```{r}
+#| label: fig-disturbance-region
+#| fig-cap: "Share of plots with signs of the main disturbances, by forest type and region. Labels: plots with signs / accessible plots."
+#| fig-width: 9.5
+#| fig-height: 5.5
+fig$f_disturbance_region
+```
+
+```{r}
+#| results: asis
+print_annex(tab$f_disturbance, "disturbance", "Plots with signs of disturbance")
+```
+
+## Forest structure {.unnumbered}
+
+```{r}
+#| label: fig-density-dbh-region
+#| fig-cap: "Tree density by diameter class, forest type and region."
+#| fig-width: 9.5
+#| fig-height: 5.5
+fig$g_density_dbh_region
+```
+
+```{r}
+#| label: fig-density-height-region
+#| fig-cap: "Tree density by height class, forest type and region."
+#| fig-width: 9.5
+#| fig-height: 5.5
+fig$h_density_height_region
+```
+
+```{r}
+#| results: asis
+print_annex(tab$g_density_dbh, "density-dbh", "Tree density by diameter class")
+print_annex(tab$h_density_height, "density-height", "Tree density by height class")
+```
+
+## Forest biomass {.unnumbered}
+
+```{r}
+#| results: asis
+print_annex(tab$i_biomass, "biomass", "Aboveground biomass")
+```
+
+:::

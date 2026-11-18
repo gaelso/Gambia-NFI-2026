@@ -9,9 +9,11 @@ source("R/01-get-data.R")
 
 source("R/01-get-data-anci.R")
 
-source("R/02-preparation-common.R")
+source("R/02a-preparation-common.R")
 
-source("R/02-preparation.R")
+source("R/02b-preparation-HD.R")
+
+source("R/02c-preparation-others.R")
 
 source("R/03-baseunit-calc.R")
 
@@ -35,3 +37,6 @@ source("R/05h-density-height.R")
 source("R/05i-biomass.R")
 
 source("R/06-two-cycles-analysis.R")
+
+## Tables, figures and values for the Quarto report, saved in results/report-objects.rds
+source("R/07-report-objects.R")

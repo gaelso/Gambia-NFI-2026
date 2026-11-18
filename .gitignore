@@ -7,6 +7,7 @@ results/
 *.DS_Store
 .vscode/
 *.docx
+!report/reference.docx
 *.html
 
 # History files
@@ -62,3 +63,5 @@ rsconnect/
 
 /.quarto/
 **/*.quarto_ipynb
+
+/.luarc.json

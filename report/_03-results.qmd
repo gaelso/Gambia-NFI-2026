@@ -1,0 +1,277 @@
+# Results and Discussion {#sec-results}
+
+Results are given at three levels: the whole country, each forest type, and each forest type within each administrative region. Forest types are those observed in the field, and plots that cover several forest types are split between them (@sec-methods). The country and forest type levels are presented in this section, and the forest type and region level in Annex 1.
+
+- **ME** is the margin of error at the 90% confidence level, as a percentage of the estimate. It is not given for domains with a single plot.
+- **Plots (n)** is the number of phase 2 clusters with at least one plot section in the domain. In the non-forest domain, it includes the phase 1 points of the non-forest stratum.
+- Plot counts (threatened species, wildlife, disturbance) use the accessible field plots, assigned to the forest type of their main LULC section.
+- At forest type and region level (Annex 1), many domains have few plots and the estimates are indicative only.
+
+## Extent of Forest Resources
+
+### Forest Area and Distribution
+
+<!-- table with area of forest type by country / region -->
+
+Forest covers `r format(round(tab$a_area$country$area_ha[tab$a_area$country$land_cover == "Forest"]), big.mark = ",")` ha, `r tab$a_area$country$area_pct[tab$a_area$country$land_cover == "Forest"]`% of the country (@tbl-area-country). The areas of each forest type are in @tbl-area-ftype, and by region in @fig-area and `r annex_ref(tab$a_area, "area")` (Annex 1).
+
+```{r}
+#| label: fig-area
+#| fig-cap: "Area of forest types by region. Error bars: 90% confidence interval."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$a_area
+```
+
+```{r}
+#| results: asis
+print_levels(tab$a_area, "area", "Area of forest types")
+```
+
+### Change in Forest Extent
+
+<!-- Estimating change requires re-viositing the CEO plots of NFI phase 1 and record year of last change, or all changes over a period of 5-10 years. -->
+
+## Biological Diversity
+
+### Tree Species Composition and Diversity
+
+<!-- IVI, Shannon index keep the top 10 or 20. We can do it by species and genus and family -->
+
+The Importance Value Index (IVI) is the sum of the relative density, relative frequency and relative dominance (basal area) of each taxon, from 0 to 300. Density and basal area are two-phase estimates. Frequency is the number of plot sections where the taxon is recorded. Unidentified trees are not included.
+
+The most important species at country level are shown in @fig-ivi-species and @tbl-ivi-species-country, and in each forest type in @fig-ivi-species-ftype and @tbl-ivi-species-ftype. Genera and families are in @tbl-ivi-genus-country to @tbl-ivi-family-ftype, and the Shannon index in @tbl-shannon-country, @tbl-shannon-ftype and @fig-shannon. The same tables by forest type and region are in Annex 1.
+
+```{r}
+#| label: fig-ivi-species
+#| fig-cap: "Top 20 species by Importance Value Index, country level."
+#| fig-width: 6.5
+#| fig-height: 5.8
+fig$b_ivi_species
+```
+
+```{r}
+#| label: fig-ivi-species-ftype
+#| fig-cap: "Top 10 species by Importance Value Index in each forest type."
+#| fig-width: 6.5
+#| fig-height: 8.5
+fig$b_ivi_species_ftype
+```
+
+```{r}
+#| label: fig-shannon
+#| fig-cap: "Shannon index of tree species by forest type and region. Error bars: 90% confidence interval."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$b_shannon
+```
+
+#### Importance Value Index of species
+
+```{r}
+#| results: asis
+print_levels(tab$b_ivi_species, "ivi-species", "Top 20 species by Importance Value Index", .heading = "#####", .drop = c("n_pp", "density_mep", "n_sections"))
+```
+
+#### Importance Value Index of genera
+
+```{r}
+#| results: asis
+print_levels(tab$b_ivi_genus, "ivi-genus", "Top 10 genera by Importance Value Index", .heading = "#####", .drop = c("n_pp", "density_mep", "n_sections"))
+```
+
+#### Importance Value Index of families
+
+```{r}
+#| results: asis
+print_levels(tab$b_ivi_family, "ivi-family", "Top 10 families by Importance Value Index", .heading = "#####", .drop = c("n_pp", "density_mep", "n_sections"))
+```
+
+#### Shannon diversity index
+
+The Shannon index $H'$ is computed from the estimated density of each taxon in the domain, at species, genus and family level. Richness is the number of taxa recorded, and evenness is $H' / \ln(\text{richness})$.
+
+```{r}
+#| results: asis
+print_levels(tab$b_shannon, "shannon", "Shannon diversity index", .heading = "#####")
+```
+
+### Rare, Threatened and Endangered Tree Species
+
+<!-- Check the whole species list against the IUCN checklist. -->
+
+Tree species are matched with the IUCN Red List of Threatened Species (version published on GBIF, `r format(info$iucn_date, "%B %Y")`). Threatened species are in the categories Critically Endangered (CR), Endangered (EN) and Vulnerable (VU). Occurrence is the number of accessible field plots with at least one live tree of the species (@fig-iucn, @tbl-iucn-country and @tbl-iucn-ftype, and by region `r annex_ref(tab$c_iucn, "iucn")` in Annex 1). The category of all recorded species is in @tbl-iucn-all.
+
+```{r}
+#| label: fig-iucn
+#| fig-cap: "Number of plots with threatened tree species, by forest type."
+#| fig-width: 6.5
+#| fig-height: 4.3
+fig$c_iucn
+```
+
+```{r}
+#| results: asis
+print_levels(tab$c_iucn, "iucn", "Tree species in the IUCN Red List threatened categories", .drop = "tree_iucn_category")
+```
+
+#### All recorded species
+
+```{r}
+#| results: asis
+print_tab(fmt_tab(tab$c_species_iucn, .drop = "tree_iucn_category"), "IUCN Red List category of all recorded tree species. NA: not assessed or not identified to species level.", "tbl-iucn-all")
+```
+
+### Wildlife Presence and Occurrence
+
+<!-- How many plots have sign of wildlife / make a ratio forest type / How important are specific wildlife species (Shannon index) -->
+
+Plots with signs of wildlife are counted by wildlife type (@fig-wildlife, @tbl-wildlife-country and @tbl-wildlife-ftype) and by type of sign (@tbl-wildlife-sign-country and @tbl-wildlife-sign-ftype). Results by region are in Annex 1 (@fig-wildlife-region, `r annex_ref(tab$d_wildlife, "wildlife")` and `r annex_ref(tab$d_wildlife_sign, "wildlife-sign")`).
+
+```{r}
+#| label: fig-wildlife
+#| fig-cap: "Share of plots with signs of wildlife, by wildlife type and forest type."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$d_wildlife
+```
+
+#### Wildlife types
+
+```{r}
+#| results: asis
+print_levels(tab$d_wildlife, "wildlife", "Plots with signs of wildlife, by wildlife type", .heading = "#####")
+```
+
+#### Types of signs
+
+```{r}
+#| results: asis
+print_levels(tab$d_wildlife_sign, "wildlife-sign", "Plots with signs of wildlife, by type of sign", .heading = "#####")
+```
+
+## Forest Health and Vitality
+
+### Tree Health and Condition
+
+<!-- percentage of healthy / damage trees. -->
+
+Tree density by overall tree condition, two-phase estimates. Damaged trees are slightly or severely affected, dying standing or dying fallen trees. At country level, `r tab$e_health$country$pct_healthy`% of the trees are healthy (@tbl-health-country). The condition classes are in @fig-condition, @tbl-condition-country and @tbl-condition-ftype, and by region in `r annex_ref(tab$e_health, "health")` and `r annex_ref(tab$e_condition, "condition")` (Annex 1).
+
+```{r}
+#| label: fig-condition
+#| fig-cap: "Share of trees by condition class, by forest type and region. All: forest type level estimate."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$e_condition
+```
+
+#### Healthy and damaged trees
+
+```{r}
+#| results: asis
+print_levels(tab$e_health, "health", "Density of healthy and damaged trees", .heading = "#####")
+```
+
+#### Tree condition classes
+
+```{r}
+#| results: asis
+print_levels(tab$e_condition, "condition", "Tree density by condition class", .heading = "#####")
+```
+
+### Forest Disturbance
+
+<!-- how many plots with forest disturbances. table with disturbance cat, spread by region -->
+
+Main disturbances (grazing, fire, branch removal and tree felling) are recorded as present or absent in each plot. Other disturbances are recorded by type (@fig-disturbance, @tbl-disturbance-country and @tbl-disturbance-ftype). Results by region are in Annex 1 (@fig-disturbance-region and `r annex_ref(tab$f_disturbance, "disturbance")`).
+
+```{r}
+#| label: fig-disturbance
+#| fig-cap: "Share of plots with signs of the main disturbances, by forest type."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$f_disturbance
+```
+
+```{r}
+#| results: asis
+print_levels(tab$f_disturbance, "disturbance", "Plots with signs of disturbance")
+```
+
+### Deadwood and Litter
+
+<!-- Litter: N plots per forest type for litter depth and composition -->
+
+### Forest Structure
+
+<!-- Tree density per diameter class -->
+
+<!-- tree height classes to be check (0-5, 5-10, etc) national forest type and region and regionxforest type -->
+
+Tree density by diameter class is shown in @fig-density-dbh, @tbl-density-dbh-country and @tbl-density-dbh-ftype. Tree density by height class is shown in @fig-density-height, @tbl-density-height-country and @tbl-density-height-ftype. Results by region are in Annex 1 (@fig-density-dbh-region, @fig-density-height-region, `r annex_ref(tab$g_density_dbh, "density-dbh")` and `r annex_ref(tab$h_density_height, "density-height")`). Tree height is the measured height, or the prediction of the local height-diameter model when the height was not measured.
+
+```{r}
+#| label: fig-density-dbh
+#| fig-cap: "Tree density by diameter class and forest type. Error bars: 90% confidence interval."
+#| fig-width: 6.5
+#| fig-height: 4.5
+fig$g_density_dbh
+```
+
+```{r}
+#| label: fig-density-height
+#| fig-cap: "Tree density by height class and forest type. Error bars: 90% confidence interval."
+#| fig-width: 6.5
+#| fig-height: 4.5
+fig$h_density_height
+```
+
+#### Tree density by diameter class
+
+```{r}
+#| results: asis
+print_levels(tab$g_density_dbh, "density-dbh", "Tree density by diameter class", .heading = "#####")
+```
+
+#### Tree density by height class
+
+```{r}
+#| results: asis
+print_levels(tab$h_density_height, "density-height", "Tree density by height class", .heading = "#####")
+```
+
+### Forest Regeneration
+
+<!-- Seedling and sapling count per ha for region / foprest type cross. -->
+
+<!-- Importance of regeneration species distribution and density -->
+
+## Productive Functions of Forests
+
+### Non-Timber Forest Products
+
+<!-- table number of plots that are abundant / rare for medicinal etc. per forest type/ region / nationally -->
+
+### Forest Biomass and Carbon Stocks
+
+Aboveground biomass (AGB) of live trees is estimated with the allometric equation of @chave2014. AGB per hectare is the ratio estimate of the domain, and the total AGB is the AGB per hectare times the domain area. At country level, AGB is `r tab$i_biomass$country$agb_ha` t/ha (@tbl-biomass-country), by forest type in @tbl-biomass-ftype, and by forest type and region in @fig-biomass and `r annex_ref(tab$i_biomass, "biomass")` (Annex 1).
+
+```{r}
+#| label: fig-biomass
+#| fig-cap: "Aboveground biomass by forest type and region. Error bars: 90% confidence interval, n = number of plots."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$i_biomass
+```
+
+```{r}
+#| results: asis
+print_levels(tab$i_biomass, "biomass", "Aboveground biomass")
+```
+
+## Protective Functions of Forests
+
+### Soil Condition and Characteristics
+
+<!-- Leave for now / soil descriptive per forest type. -->
