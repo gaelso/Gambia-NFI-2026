@@ -616,13 +616,15 @@ tree_to_ssu <- function(.tree, .class_sub, .y, .plot_area, .name = "ssu_total"){
 ## .plot_cat : records with cluster_no, plot_no and the category column (.cat), several rows per plot allowed
 ## .plot_info: one row per plot to include (e.g. accessible field plots), with cluster_no, plot_no,
 ##             forest_type and region. It also gives the total number of plots per domain (n_plots_total).
+## The country level is the national forest: plots of the non-forest domain are not included.
 
 count_plots_by_level <- function(.plot_cat, .plot_info, .cat){
 
   cat <- enquo(.cat)
 
   info_levels <- list(
-    country            = .plot_info |> mutate(forest_type = "All", region = "All"),
+    ## National forest: all forest types together, non-forest plots counted in their own domain only
+    country            = .plot_info |> filter(forest_type != "Non-forest") |> mutate(forest_type = "All", region = "All"),
     forest_type        = .plot_info |> mutate(region = "All"),
     forest_type_region = .plot_info
   )
@@ -646,7 +648,12 @@ count_plots_by_level <- function(.plot_cat, .plot_info, .cat){
 
 ## Function 8: split a table with a 'level' column into one table per level ####
 
-split_by_level <- function(.df){
+## .nonforest: FALSE (default) to remove the non-forest domain rows (forest_type "Non-forest"). Results are
+##             reported for the forest types only, except areas (05a-area.R, not split with this function).
+##             The country level, estimated over the whole country, is kept.
+
+split_by_level <- function(.df, .nonforest = FALSE){
+  if (!.nonforest && "forest_type" %in% names(.df)) .df <- filter(.df, is.na(forest_type) | forest_type != "Non-forest")
   lvls <- unique(.df$level)
   map(set_names(lvls), \(l) .df |> filter(level == l) |> select(-level))
 }
@@ -656,4 +663,30 @@ split_by_level <- function(.df){
 
 save_tables <- function(.tabs, .prefix, .dir = "results/tables"){
   iwalk(.tabs, \(x, nm) write_csv(x, file.path(.dir, paste0(.prefix, "_", nm, ".csv"))))
+}
+
+
+## Function 10: plot values to SSU x sub-class, input .ph2_sub of nfi_aggregate2() ####
+
+## For plot level records that are not linked to a LULC section (regeneration subplot, NTFP, soil): the plot
+## value applies to all the LULC sections (SSU) of the plot, in proportion to their area.
+## .plot_val : records with cluster_no, plot_no, the sub-class column (.class_sub) and .y, one row per plot x sub-class
+## .ph2_sp   : phase 2 base units with PSU, SSU, cluster_no, plot_no and ssu_area (ha)
+## .y        : plot value per ha (e.g. seedlings/ha), or 1 for the presence of a category (the SSU total is then
+##             the SSU area with the category, and the ratio estimate the share of the domain area)
+## .name     : name of the output column
+
+plot_to_ssu <- function(.plot_val, .ph2_sp, .class_sub, .y, .name = "ssu_total"){
+
+  class_sub <- enquo(.class_sub)
+  y         <- enquo(.y)
+
+  .ph2_sp |>
+    select(PSU, SSU, cluster_no, plot_no, ssu_area) |>
+    inner_join(
+      .plot_val |> select(cluster_no, plot_no, !!class_sub, y_ha = !!y),
+      by = join_by(cluster_no, plot_no), relationship = "many-to-many"
+    ) |>
+    transmute(PSU, SSU, !!class_sub, !!.name := y_ha * ssu_area)
+
 }

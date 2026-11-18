@@ -1,13 +1,10 @@
-# Conclusions and Recommendations {#sec-conclusions}
+# Conclusions and Recommendations {#sec-conclusions .unnumbered}
 
-## Key findings
-
+## Key findings {.unnumbered}
 <!-- Main results on forest extent, diversity, health and biomass. -->
 
-## Limitations
-
+## Limitations {.unnumbered}
 <!-- e.g. non-forest stratum not visited in phase 2, small domains at forest type and region level, trees outside the live tree allometry. -->
 
-## Recommendations for the next cycle
-
+## Recommendations for the next cycle {.unnumbered}
 <!-- Sampling design, field protocol, data management. -->

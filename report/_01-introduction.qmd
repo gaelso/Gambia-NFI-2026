@@ -1,13 +1,82 @@
-# Introduction {#sec-introduction}
+# Introduction {#sec-introduction .unnumbered}
 
-## Background
+## Background {#sec-background .unnumbered}
 
-<!-- Forest resources of the Gambia, previous NFI cycles, policy context and reporting needs. -->
+<!-- DoF to write -->
 
-## Objectives
+Forests are an important component of The Gambia's natural resource base and contribute to the environmental conditions on which livelihoods and economic activities depend. They provide fuelwood, construction materials, food, medicines and other forest products, while supporting biodiversity, protecting soils and contributing to water and climate regulation. These functions are particularly important in rural areas, where households depend on forest resources alongside agriculture and livestock production.
 
-<!-- Objectives of the NFI cycle 2 and of this report. -->
+Much of The Gambia lies within the Sudano-Sahelian agro-ecological zone and is characterised by a pronounced dry season and woodland savannah vegetation. The country's forest resources also include mangrove ecosystems associated with the River Gambia and its estuarine environments. Differences in environmental conditions, species composition and patterns of resource use create distinct management needs across these forest ecosystems.
 
-## Study area
+The continued provision of forest goods and services is affected by pressures on the extent and condition of forests. Unsustainable harvesting, including the selective removal of high-value species such as *Pterocarpus erinaceus*, together with agricultural expansion, settlement and infrastructure development, can alter forest composition, structure and regeneration. Land degradation and desertification further underline the importance of maintaining the protective functions of forests.
 
+Forest management in The Gambia has also evolved through the development and expansion of participatory approaches. These approaches place greater emphasis on the involvement of communities and other stakeholders in managing forest resources. Reliable information is therefore needed both for national planning and for decisions concerning the management, conservation and sustainable use of individual forest areas.
+
+Previous national forest inventories were conducted in 1981/82, 1997/98 and 2009/10. These assessments provided important information for forest management and reporting. However, the time elapsed since the most recent assessment, together with continuing pressures on forest resources and evolving information needs, made an updated inventory necessary.
+
+The fourth national assessment builds on this earlier work while introducing improvements to the sampling design, field procedures, inventory tools and data management. The variables collected were reviewed through consultation with the Department of Forestry and other stakeholders to focus on national forest management priorities and international reporting needs.
+
+The assessment was undertaken under the leadership of the Ministry of Environment, Climate Change and Natural Resources, through the Department of Forestry, with technical support from FAO. This report presents the methodology and findings of the National Forest Assessment (NFA).
+
+## Rationale and objectives {#sec-objectives .unnumbered}
+
+Effective forest management requires reliable information on the extent, composition, condition and productive capacity of forest resources. Without an updated information base, it is difficult to identify management priorities, assess conservation needs, plan sustainable resource use or report consistently on the status of forests.
+
+The need for the current inventory arose from the age of the previous national assessment and the changes in forest use and management that have occurred since it was conducted. Updated information is required to support the National Forest Programme, guide the implementation of participatory forest management, and inform responses to forest degradation and other pressures on forest resources.
+
+The inventory also responds to the need for a more consistent and accessible national forest information base. An agreed set of variables, supported by standardised field procedures, digital data collection, quality-control measures and documented analytical methods, provides a basis for producing information that can be reviewed, used and updated.
+
+The overall goal of the NFA is to support the National Forest Programme in advancing sustainable natural resource management and improving rural livelihoods through better forest management and efficient, cost-effective forestry activities.
+
+The direct objective is to generate reliable, up-to-date information on forest resources to support policy formulation, institutional capacity building, planning, conservation and the sustainable use of natural resources. The information will also contribute to international reporting, including FAO's Global Forest Resources Assessment, forest-related greenhouse gas reporting under the United Nations Framework Convention on Climate Change (UNFCCC), and biodiversity reporting under the Convention on Biological Diversity (CBD).
+
+## Scope {#sec-scope .unnumbered}
+
+The NFA covers forest areas across The Gambia within and outside designated forest reserves and forest parks. Its coverage encompasses the three forest strata used in the inventory design: Closed forest, Open forest and Mangrove. Trees outside forests are not included.
+
+The inventory combines information from the Collect Earth Online (CEO) forest classification exercise with observations and measurements collected in the field. The CEO exercise provides information on current forest extent and forest-type classification, while the field inventory provides more detailed information on forest composition, structure, condition and associated resources.
+
+The inventory provides biophysical information to support forest management and policy decisions. Its findings can inform actions relating to livelihoods and resource use, although the inventory does not directly quantify household dependence on forests or the economic value of forest goods and services.
+
+The inventory scope includes:
+
+-   Tree species identity, dimensions, status and condition.
+
+-   Forest regeneration, including seedlings and saplings.
+
+-   Fallen deadwood, standing dead trees and stumps.
+
+-   Litter and recorded soil characteristics.
+
+-   Forest disturbances and evidence of resource use.
+
+-   Non-timber forest products and their recorded uses and availability.
+
+-   Wildlife observations and signs of occurrence.
+
+-   Biomass and carbon stocks estimated from tree and deadwood measurements
+
+## Criteria, indicators and targeted outputs {#sec-criteria .unnumbered}
+
+The NFA reporting framework is organised around five criteria: extent of forest resources, biological diversity, forest health and vitality, productive functions of forests, and protective functions of forests. These criteria provide a structure for linking the information collected to the questions the inventory is intended to address.
+
+Within this framework, a **criterion** represents a broad aspect of forest resources or their functions. The associated **indicators** identify the characteristics assessed, while the **targeted outputs** specify the estimates, summaries, lists and spatial information to be produced.
+
+The framework reflects the information priorities identified through consultations with the Department of Forestry and other stakeholders. These priorities guided the development of the NFA methodology and the selection of variables for field data collection, which were streamlined to focus on those most relevant for national forest management priorities and international reporting needs. The framework also guides the analysis and organisation of the Results chapter.
+
+| Criterion                          | Indicators covered                                                                                                              | Targeted outputs                                                                                                                                                                                                                                                                                                       |
+|------------|----------------------|--------------------------------------|
+| 1. Extent of forest resources      | Current forest area and distribution                                                                                                | Estimated forest area in hectares; percentage of land area under forest; area by forest stratum; and spatial distribution of forests.                                                                                                                                                                                      |
+| 2. Biological diversity            | Tree species composition and richness; occurrence of rare, threatened and endangered tree species; wildlife presence and occurrence | Tree species lists; abundance and frequency summaries; species richness and diversity indices; conservation-status summaries and occurrence of species of conservation concern; wildlife taxa or species lists; and summaries of direct observations and recorded signs.                                                   |
+| 3. Forest health and vitality      | Tree health and condition; forest disturbance; deadwood and litter characteristics; forest structure; forest regeneration           | Summaries of crown and overall tree condition, recorded damage and its causes; disturbance occurrence and intensity; deadwood quantity, volume and decomposition; litter characteristics; stems and basal area per hectare; diameter and height distributions; and seedling and sapling density, richness and composition. |
+| 4. Productive functions of forests | Non-timber forest products; forest biomass and carbon stocks                                                                        | NTFP lists, occurrence, richness, use categories and recorded availability; living-tree biomass per hectare and total biomass; deadwood biomass; and associated carbon-stock estimates.                                                                                                                                    |
+| 5. Protective functions of forests | Recorded soil condition and characteristics                                                                                         | Summaries of soil surface condition, depth, topsoil and subsoil texture, and soil colour, providing information on site conditions relevant to forest management.                                                                                                                                                          |
+
+: NFA criteria, indicators and targeted outputs {#tbl-criteria}
+
+The selected indicators describe the aspects of each criterion covered by the inventory. They provide information for interpreting forest conditions and management needs, rather than a complete assessment of every ecological, social and economic dimension of sustainable forest management.
+
+The detailed NFA Results Framework Matrix in Annex I links each indicator to its analytical outputs and corresponding report section.
+
+## Study area {.unnumbered}
 <!-- Country, ecological zones, administrative regions, main forest types. -->

@@ -2,28 +2,33 @@
 title: "Gambia NFI 2026"
 subtitle: "Analysis Report for the \nNFI cycle 2"
 #author: "Iveren Chenge, Gael Sola, FAO"
-date: "November 2026"
+## Report date: on the cover page (bottom) and the report information page, see report/_00-front-matter.qmd
+## (no "date" field: pandoc would place it right under the subtitle, above the cover photo)
+report-date: "November 2026"
 format:
   docx:
-    ## A4 page size and styles (Arial 11, tables in 'Table Text' style: Arial 9), last section (annex) in
-    ## landscape, see filters/landscape-annex.lua and filters/table-style.lua
+    ## Styles in report/reference.docx: A4 portrait, Arial 11, tables and captions Arial 9, captions in italics,
+    ## page break before each main section title (Heading 1, also TOC Heading), DRAFT watermark (page header).
     reference-doc: report/reference.docx
     syntax-highlighting: github
-    lof: true
-    lot: true
     fig-dpi: 300
-toc: true
-toc-depth: 3
+## Table of contents, list of figures and list of tables are inserted after the foreword, see
+## report/_00-front-matter.qmd (pandoc's toc would place them right after the title).
+toc: false
+toc-depth: 2
 #toc-title: "Table des matières"
 number-sections: true
 bibliography: references.bib
 filters:
+  ## Table captions in the 'Table Caption' style, needed by the list of tables
   - at: post-render
     path: filters/table-caption-style.lua
+  ## Table cells aligned by column (text left, numbers right), column names in bold
   - at: post-render
     path: filters/table-style.lua
-  - at: post-render
-    path: filters/landscape-annex.lua
+  ## Disabled for now. landscape-annex.lua needs a landscape last section in reference.docx (now portrait).
+  # - at: post-render
+  #   path: filters/landscape-annex.lua
 params:
   ## TRUE to run the analysis again, see setup chunk
   run_analysis: false
@@ -61,6 +66,8 @@ source("report/report-functions.R")
 ```
 
 <!-- Report sections, one file each. Comment out a line to leave a section out while drafting. -->
+
+{{< include report/_00-front-matter.qmd >}}
 
 {{< include report/_01-introduction.qmd >}}
 

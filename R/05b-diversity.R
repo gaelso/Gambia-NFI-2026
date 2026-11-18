@@ -77,15 +77,15 @@ res_div <- map(c(species = "tree_species_name", genus = "tree_genus", family = "
 })
 
 ## + Tables ####
-## Top 20 species, top 10 genera and families by IVI in each domain
+## Top 20 species, genera and families by IVI in each domain (report: top 10 in the main text, top 20 in annex)
 tmp$top_ivi <- \(.df, .n, .name) .df |>
   slice_max(ivi, n = .n, by = c(level, forest_type, region), with_ties = FALSE) |>
   rename(!!.name := taxon) |>
   split_by_level()
 
 tab$b_ivi_species <- tmp$top_ivi(res_div$species$ivi, 20, "species")
-tab$b_ivi_genus   <- tmp$top_ivi(res_div$genus$ivi, 10, "genus")
-tab$b_ivi_family  <- tmp$top_ivi(res_div$family$ivi, 10, "family")
+tab$b_ivi_genus   <- tmp$top_ivi(res_div$genus$ivi, 20, "genus")
+tab$b_ivi_family  <- tmp$top_ivi(res_div$family$ivi, 20, "family")
 
 tab$b_shannon <- imap(res_div, \(x, tx) x$shannon |> mutate(taxon_level = tx, .after = n_pp)) |>
   list_rbind() |>

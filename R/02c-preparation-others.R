@@ -161,3 +161,19 @@ tree$tree_carbon_bg <- tree$tree_biomass_bg * defaults$CF
 tree$tree_carbon_total <- tree$tree_biomass_total * defaults$CF
 
 
+
+
+
+##
+## Baobab Aboveground Biomass ######
+##
+
+## Baobabs (Adansonia) are kept out of the live tree table (see 02a-preparation-common.R), and so out of the
+## plot level totals (03-baseunit-calc.R). Their AGB is calculated with the same Chave 2014 equation and the
+## species wood density, from the measured heights, and reported separately in 05i-biomass.R.
+## The pantropical equation is not calibrated for the water-storing stem of baobabs: values to be reviewed.
+
+## Check: all baobab heights measured (no height-diameter model for baobabs)
+sum(is.na(baobab$tree_height))
+
+baobab$tree_biomass_ag <- with(baobab, round(0.0673 * (tree_wood_density * tree_dbh^2 * tree_height)^0.976 / 1000, 3))

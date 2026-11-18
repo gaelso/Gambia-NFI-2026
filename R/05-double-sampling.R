@@ -3,7 +3,9 @@
 ## See nfi_aggregate() and nfi_aggregate2() in 'R/00-functions.R' for the inputs.
 
 ## Reporting levels, as domains of the two-phase estimator:
-## - country: all land area of the country
+## - country: national forest, all forest types together. The non-forest part of the country is a separate
+##   domain at this level, removed from the outputs (split_by_level()): per ha values are per ha of forest,
+##   not per ha of land area (areas: see 05a-area.R)
 ## - forest_type: forest type of the plot LULC sections (Closed, Open, Mangrove forest, Non-forest)
 ## - forest_type_region: forest type x administrative region
 
@@ -30,7 +32,7 @@ ph2_data <- plot_lulc_analysis |>
     ## Domains
     forest_type = lulc_forest_label,
     region = plot_region,
-    dom_country = "Gambia",
+    dom_country = if_else(forest_type == "Non-forest", "Non-forest", "Forest"),
     dom_ftype = forest_type,
     dom_ftype_region = paste(forest_type, region, sep = " - ")
   )
@@ -44,7 +46,7 @@ defaults$pal_ftype     <- c("Closed Forest" = "#1b5e20", "Open Forest" = "#8bc34
 
 ## Forest type and region of each domain, to add to nfi_aggregate_levels() outputs
 domain_lookup <- bind_rows(
-  ph2_data |> distinct(domain = dom_country) |> mutate(level = "country", forest_type = "All", region = "All"),
+  ph2_data |> distinct(domain = dom_country) |> mutate(level = "country", forest_type = if_else(domain == "Forest", "All", "Non-forest"), region = "All"),
   ph2_data |> distinct(domain = dom_ftype, forest_type) |> mutate(level = "forest_type", region = "All"),
   ph2_data |> distinct(domain = dom_ftype_region, forest_type, region) |> mutate(level = "forest_type_region")
 ) |>

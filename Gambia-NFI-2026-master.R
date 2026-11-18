@@ -35,6 +35,9 @@ source("R/05f-disturbance.R")
 source("R/05g-density-dbh.R")
 source("R/05h-density-height.R")
 source("R/05i-biomass.R")
+source("R/05j-regeneration.R")
+source("R/05k-ntfp.R")
+source("R/05l-soil.R")
 
 source("R/06-two-cycles-analysis.R")
 

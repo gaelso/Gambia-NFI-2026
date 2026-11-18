@@ -1,6 +1,17 @@
+# Annex 1: Height-diameter models {#sec-annex-hd .unnumbered}
+
+Comparison of the height-diameter models tested for the prediction of missing tree heights, see @sec-hd-model.
+
+In @tbl-hd-models, RMSE and bias (prediction minus measurement) are computed on all measured heights, and the forest type bias is the largest absolute bias of a forest type. Random parameters is the number of parameters with a cluster random effect, and cluster curves the number of clusters with their own curve.
+
+```{r}
+#| results: asis
+print_tab(fmt_tab(tab$hd_models), "Comparison of height-diameter models", "tbl-hd-models")
+```
+
 ::: landscape-annex
 
-# Annex 1: Results by forest type and region {.unnumbered}
+# Annex 2: Results by forest type and region {#sec-annex-region .unnumbered}
 
 Estimates for each forest type within each administrative region. Many domains have few plots and the estimates are indicative only. ME is not given for domains with a single plot. Definitions are in @sec-results.
 
@@ -15,9 +26,9 @@ print_annex(tab$a_area, "area", "Area of forest types")
 
 ```{r}
 #| results: asis
-print_annex(tab$b_ivi_species, "ivi-species", "Top 20 species by Importance Value Index", .drop = c("n_pp", "density_mep", "n_sections"))
-print_annex(tab$b_ivi_genus, "ivi-genus", "Top 10 genera by Importance Value Index", .drop = c("n_pp", "density_mep", "n_sections"))
-print_annex(tab$b_ivi_family, "ivi-family", "Top 10 families by Importance Value Index", .drop = c("n_pp", "density_mep", "n_sections"))
+print_annex(top_n_levels(tab$b_ivi_species, 10), "ivi-species", "Top 10 species by Importance Value Index", .drop = c("n_pp", "density", "density_mep", "basal_area", "n_sections"))
+print_annex(top_n_levels(tab$b_ivi_genus, 10), "ivi-genus", "Top 10 genera by Importance Value Index", .drop = c("n_pp", "density", "density_mep", "basal_area", "n_sections"))
+print_annex(top_n_levels(tab$b_ivi_family, 10), "ivi-family", "Top 10 families by Importance Value Index", .drop = c("n_pp", "density", "density_mep", "basal_area", "n_sections"))
 print_annex(tab$b_shannon, "shannon", "Shannon diversity index")
 ```
 
@@ -91,11 +102,56 @@ print_annex(tab$g_density_dbh, "density-dbh", "Tree density by diameter class")
 print_annex(tab$h_density_height, "density-height", "Tree density by height class")
 ```
 
+## Forest regeneration {.unnumbered}
+
+```{r}
+#| results: asis
+print_annex(tab$j_regen, "regen", "Density of seedlings and saplings")
+```
+
+## Non-timber forest products {.unnumbered}
+
+```{r}
+#| results: asis
+print_annex(tab$k_ntfp, "ntfp", "Share of area with NTFP, by use category")
+print_annex(tab$k_ntfp_avail, "ntfp-avail", "Plots with NTFP by use category and highest availability")
+```
+
 ## Forest biomass {.unnumbered}
 
 ```{r}
 #| results: asis
 print_annex(tab$i_biomass, "biomass", "Aboveground biomass")
+```
+
+# Annex 3: Top 20 taxa by Importance Value Index {#sec-annex-ivi .unnumbered}
+
+Top 20 species, genera and families by Importance Value Index (IVI), at country level and in each forest type. Definitions are in @sec-results.
+
+```{r}
+#| include: false
+ivi_drop <- c("n_pp", "density", "density_mep", "basal_area", "n_sections")
+```
+
+## Species {.unnumbered}
+
+```{r}
+#| results: asis
+print_levels(tab$b_ivi_species, "ivi-species-top20", "Top 20 species by Importance Value Index", .heading = "###", .drop = ivi_drop, .split_ftype = TRUE, .unnumbered = TRUE)
+```
+
+## Genera {.unnumbered}
+
+```{r}
+#| results: asis
+print_levels(tab$b_ivi_genus, "ivi-genus-top20", "Top 20 genera by Importance Value Index", .heading = "###", .drop = ivi_drop, .split_ftype = TRUE, .unnumbered = TRUE)
+```
+
+## Families {.unnumbered}
+
+```{r}
+#| results: asis
+print_levels(tab$b_ivi_family, "ivi-family-top20", "Top 20 families by Importance Value Index", .heading = "###", .drop = ivi_drop, .split_ftype = TRUE, .unnumbered = TRUE)
 ```
 
 :::

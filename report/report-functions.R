@@ -31,7 +31,12 @@ col_labels <- c(
   dbh_class = "DBH class (cm)", height_class = "Height class (m)",
   agb_ha = "AGB (t/ha)", agb_ha_mep = "AGB ME (%)", agb_tot = "Total AGB (t)", agb_tot_mep = "Total AGB ME (%)",
   hd_model = "Model", hd_nranp = "Random parameters", hd_aic = "AIC", hd_rmse = "RMSE (m)", hd_bias = "Bias (m)",
-  hd_bias_ftype = "Max. forest type bias (m)", hd_n_curves = "Cluster curves (n)", hd_n_decreasing = "Decreasing curves (n)"
+  hd_bias_ftype = "Max. forest type bias (m)", hd_n_curves = "Cluster curves (n)", hd_n_decreasing = "Decreasing curves (n)",
+  regen_class = "Regeneration", regen_ha = "Density (ind./ha)", regen_mep = "Density ME (%)",
+  ntfp_use = "Use category", area_ntfp_pct = "Area with NTFP (%)", area_ntfp_mep = "Area ME (%)", n_products = "Products (n)",
+  ntfp_name_label = "Product", n_few = "Few (n)", n_moderate = "Moderate (n)", n_abundant = "Abundant (n)",
+  tree_group = "Tree group",
+  soil_attribute = "Attribute", soil_class = "Class", soil_pct = "Share of area (%)", soil_mep = "Share ME (%)"
 )
 
 ## Reporting levels: names in tab, subsection titles and cross-reference label suffixes
@@ -54,26 +59,59 @@ fmt_tab <- function(.df, .level = NULL, .drop = NULL) {
 }
 
 ## Print a table with caption and cross-reference label (chunk option results: asis)
+## Simple table format: pandoc sets no column widths (pipe tables with long lines get fixed relative widths
+## where numbers overflow narrow columns), so Word autofits the columns to their content.
 print_tab <- function(.df, .caption, .label) {
-  cat(kable(.df, format = "pipe", format.args = list(big.mark = ",")), sep = "\n")
+  cat(kable(.df, format = "simple", format.args = list(big.mark = ",")), sep = "\n")
   cat("\n: ", .caption, " {#", .label, "}\n\n", sep = "")
 }
 
 ## One subsection per reporting level with its table (chunk option results: asis).
 ## Labels: tbl-<id>-country, tbl-<id>-ftype, tbl-<id>-ftype-region
 ## Main text: country and forest type levels (default), annex: forest type and region level (print_annex())
+## .split_ftype: TRUE for one table per forest type at forest type level, labels tbl-<id>-ftype-<forest type>
+## .unnumbered : TRUE for unnumbered subsection headings (annexes)
 print_levels <- function(.tabs, .id, .caption, .heading = "####", .drop = NULL,
-                         .levels = c("country", "forest_type")) {
+                         .levels = c("country", "forest_type"), .split_ftype = FALSE, .unnumbered = FALSE) {
   level_info |>
     filter(level %in% .levels) |>
     pwalk(\(level, title, suffix) {
-      cat(.heading, " ", title, "\n\n", sep = "")
-      print_tab(
-        fmt_tab(.tabs[[level]], level, .drop),
-        .caption = paste0(.caption, ", ", tolower(title)),
-        .label = paste0("tbl-", .id, "-", suffix)
-      )
+      cat(.heading, " ", title, if (.unnumbered) " {.unnumbered}", "\n\n", sep = "")
+      if (level == "forest_type" && .split_ftype) {
+        .df <- .tabs[[level]]
+        walk(ftype_names(.df), \(ftype_name) {
+          print_tab(
+            fmt_tab(filter(.df, forest_type == ftype_name), level, c("forest_type", .drop)),
+            .caption = paste0(.caption, ", ", ftype_name),
+            .label = paste0("tbl-", .id, "-", suffix, "-", region_slug(ftype_name))
+          )
+        })
+      } else {
+        print_tab(
+          fmt_tab(.tabs[[level]], level, .drop),
+          .caption = paste0(.caption, ", ", tolower(title)),
+          .label = paste0("tbl-", .id, "-", suffix)
+        )
+      }
     })
+}
+
+## Forest types of a forest type level table, in factor level order
+ftype_names <- function(.df) {
+  .df$forest_type |> factor() |> droplevels() |> levels()
+}
+
+## Cross-reference to the forest type tables of print_levels(.split_ftype = TRUE) for inline R code:
+## `r ftype_ref(tab$b_ivi_species, "ivi-species")` -> "Tables 12 to 15"
+ftype_ref <- function(.tabs, .id) {
+  labels <- paste0("tbl-", .id, "-ftype-", region_slug(ftype_names(.tabs$forest_type)))
+  if (length(labels) == 1) return(paste0("@", labels))
+  paste0("Tables [-@", first(labels), "] to [-@", last(labels), "]")
+}
+
+## First .n rows of each domain by decreasing .var, for each level of a list of tables (e.g. top 10 by IVI)
+top_n_levels <- function(.tabs, .n, .var = "ivi") {
+  map(.tabs, \(x) slice_max(x, .data[[.var]], n = .n, by = any_of(c("forest_type", "region")), with_ties = FALSE))
 }
 
 ## Regions of a forest type and region level table, in factor level order
