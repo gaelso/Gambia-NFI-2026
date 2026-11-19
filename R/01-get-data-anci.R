@@ -27,14 +27,15 @@ anci$wood_density <- local({
 
 anci$sf_GEZ <- st_read("data-anci/gez2010/GMB_gez_2010_wgs84.geojson", quiet = TRUE)
 
-## IUCN Red List, plants only. Accepted names and synonyms, with the family and category of the accepted species.
-## Files without header, column positions from 'data-anci/iucn/meta.xml'.
-## iucn_name: genus + species epithet, for matching with tree species names
+## IUCN Red List, plants and animals. Accepted names and synonyms, with the family and category of the accepted
+## species. Files without header, column positions from 'data-anci/iucn/meta.xml'.
+## iucn_name: genus + species epithet, for matching with tree species names (kingdom PLANTAE) and wildlife
+## names (kingdom ANIMALIA)
 anci$iucn <- local({
 
   taxon <- read_tsv("data-anci/iucn/taxon.txt", col_names = FALSE, quote = "", col_types = cols(.default = "c"), progress = FALSE) |>
     select(iucn_id = X1, iucn_name_full = X2, kingdom = X3, family = X7, iucn_rank = X11, iucn_status = X13, iucn_accepted_id = X14) |>
-    filter(kingdom == "PLANTAE")
+    filter(kingdom %in% c("PLANTAE", "ANIMALIA"))
 
   dist <- read_tsv("data-anci/iucn/distribution.txt", col_names = FALSE, quote = "", col_types = cols(.default = "c"), progress = FALSE) |>
     select(iucn_accepted_id = X1, threat_status = X6) |>
@@ -42,7 +43,7 @@ anci$iucn <- local({
 
   taxon |>
     left_join(
-      taxon |> filter(iucn_status == "accepted") |> select(iucn_accepted_id = iucn_id, iucn_family = family),
+      taxon |> filter(iucn_status == "accepted") |> select(iucn_accepted_id = iucn_id, iucn_family = family, iucn_accepted_name = iucn_name_full),
       by = join_by(iucn_accepted_id)
     ) |>
     inner_join(dist, by = join_by(iucn_accepted_id)) |>
@@ -70,7 +71,8 @@ anci$iucn <- local({
         TRUE ~ threat_status
       )
     ) |>
-    select(iucn_name, iucn_name_full, iucn_rank, iucn_status, iucn_accepted_id, iucn_family, iucn_code, iucn_category)
+    mutate(iucn_accepted_name = word(iucn_accepted_name, 1, 2)) |>
+    select(kingdom, iucn_name, iucn_name_full, iucn_rank, iucn_status, iucn_accepted_id, iucn_accepted_name, iucn_family, iucn_code, iucn_category)
 })
 
 ## Ancillaries from gvt

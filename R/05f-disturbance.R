@@ -45,6 +45,49 @@ tab$f_disturbance$forest_type
 
 save_tables(tab$f_disturbance, "05f_disturbance")
 
+## + Intensity of the main disturbances ####
+## Accessible field plots with each main disturbance, by recorded intensity (low, medium, high)
+tmp$disturbance_intensity <- plot |>
+  select(
+    cluster_no, plot_no,
+    Grazing_sign = plot_grazing_sign, Grazing_int = plot_grazing_intensity_label,
+    Fire_sign = plot_fire_sign, Fire_int = plot_fire_intensity_label,
+    `Branch removal_sign` = plot_branch_removal_sign, `Branch removal_int` = plot_branch_removal_intensity_label,
+    `Tree felling_sign` = plot_tree_felling_sign, `Tree felling_int` = plot_tree_felling_intensity_label
+  ) |>
+  pivot_longer(-c(cluster_no, plot_no), names_to = c("disturbance", ".value"), names_sep = "_") |>
+  filter(sign) |>
+  mutate(
+    intensity = replace_na(int, "Not recorded"),
+    dist_int = paste(disturbance, intensity, sep = "|")
+  )
+
+tmp$disturbance_int_levels <- c("Low", "Medium", "High", "Not recorded")
+
+res_disturbance_int <- count_plots_by_level(tmp$disturbance_intensity, plot_info, dist_int) |>
+  separate_wider_delim(dist_int, delim = "|", names = c("disturbance", "intensity")) |>
+  mutate(intensity = factor(intensity, levels = tmp$disturbance_int_levels)) |>
+  arrange(intensity) |>
+  pivot_wider(id_cols = c(level, forest_type, region, disturbance, n_plots_total), names_from = intensity, values_from = n_plots, values_fill = 0)
+
+## All intensity columns, also when a class is absent
+for (cl in tmp$disturbance_int_levels) if (!cl %in% names(res_disturbance_int)) res_disturbance_int[[cl]] <- 0L
+
+tab$f_disturbance_int <- res_disturbance_int |>
+  mutate(
+    n_plots = Low + Medium + High + `Not recorded`,
+    pct_plots = round(n_plots / n_plots_total * 100, 1),
+    disturbance = factor(disturbance, levels = c("Grazing", "Fire", "Branch removal", "Tree felling")),
+    forest_type = factor(forest_type, levels = defaults$ftype_levels),
+    region = factor(region, levels = defaults$region_levels)
+  ) |>
+  select(level, forest_type, region, disturbance, n_plots_total, n_plots, pct_plots, n_low = Low, n_medium = Medium, n_high = High, n_int_na = `Not recorded`) |>
+  arrange(level, forest_type, region, disturbance) |>
+  split_by_level()
+tab$f_disturbance_int$forest_type
+
+save_tables(tab$f_disturbance_int, "05f_disturbance_int")
+
 ## + Figures ####
 fig$f_disturbance <- tab$f_disturbance$forest_type |>
   filter(disturbance_group != "Other") |>

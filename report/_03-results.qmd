@@ -25,6 +25,7 @@ fig$a_area
 ```
 
 ```{r}
+#| label: 03-area-table
 #| results: asis
 print_levels(tab$a_area, "area", "Area of forest types")
 ```
@@ -70,6 +71,7 @@ fig$b_shannon
 ```
 
 ```{r}
+#| label: 03-ivi-columns
 #| include: false
 ## IVI tables: IVI and its relative components only
 ivi_drop <- c("n_pp", "density", "density_mep", "basal_area", "n_sections")
@@ -78,6 +80,7 @@ ivi_drop <- c("n_pp", "density", "density_mep", "basal_area", "n_sections")
 #### Importance Value Index of species
 
 ```{r}
+#| label: 03-ivi-species
 #| results: asis
 print_levels(top_n_levels(tab$b_ivi_species, 10), "ivi-species", "Top 10 species by Importance Value Index", .heading = "#####", .drop = ivi_drop, .split_ftype = TRUE)
 ```
@@ -85,6 +88,7 @@ print_levels(top_n_levels(tab$b_ivi_species, 10), "ivi-species", "Top 10 species
 #### Importance Value Index of genera
 
 ```{r}
+#| label: 03-ivi-genus
 #| results: asis
 print_levels(top_n_levels(tab$b_ivi_genus, 10), "ivi-genus", "Top 10 genera by Importance Value Index", .heading = "#####", .drop = ivi_drop, .split_ftype = TRUE)
 ```
@@ -92,6 +96,7 @@ print_levels(top_n_levels(tab$b_ivi_genus, 10), "ivi-genus", "Top 10 genera by I
 #### Importance Value Index of families
 
 ```{r}
+#| label: 03-ivi-family
 #| results: asis
 print_levels(top_n_levels(tab$b_ivi_family, 10), "ivi-family", "Top 10 families by Importance Value Index", .heading = "#####", .drop = ivi_drop, .split_ftype = TRUE)
 ```
@@ -101,6 +106,7 @@ print_levels(top_n_levels(tab$b_ivi_family, 10), "ivi-family", "Top 10 families 
 The Shannon index $H'$ is computed from the estimated density of each taxon in the domain, at species, genus and family level. Richness is the number of taxa recorded, and evenness is $H' / \ln(\text{richness})$.
 
 ```{r}
+#| label: 03-shannon-table
 #| results: asis
 print_levels(tab$b_shannon, "shannon", "Shannon diversity index", .heading = "#####")
 ```
@@ -109,7 +115,7 @@ print_levels(tab$b_shannon, "shannon", "Shannon diversity index", .heading = "##
 
 <!-- Check the whole species list against the IUCN checklist. -->
 
-Tree species are matched with the IUCN Red List of Threatened Species (version published on GBIF, `r format(info$iucn_date, "%B %Y")`). Threatened species are in the categories Critically Endangered (CR), Endangered (EN) and Vulnerable (VU). Occurrence is the number of accessible field plots with at least one live tree of the species (@fig-iucn, @tbl-iucn-country and @tbl-iucn-ftype, and by region `r annex_ref(tab$c_iucn, "iucn")` in Annex 2). The category of all recorded species is in @tbl-iucn-all.
+Tree species are matched with the IUCN Red List of Threatened Species (version published on GBIF, `r format(info$iucn_date, "%B %Y")`). Threatened species are in the categories Critically Endangered (CR), Endangered (EN) and Vulnerable (VU). Occurrence is the number of accessible field plots with at least one live tree of the species (@fig-iucn, @tbl-iucn-country and @tbl-iucn-ftype, and by region `r annex_ref(tab$c_iucn, "iucn")` in Annex 2). The full list of recorded tree species, with their IUCN category, is in Annex 4 (@tbl-species-list).
 
 ```{r}
 #| label: fig-iucn
@@ -120,22 +126,16 @@ fig$c_iucn
 ```
 
 ```{r}
+#| label: 03-iucn-table
 #| results: asis
 print_levels(tab$c_iucn, "iucn", "Tree species in the IUCN Red List threatened categories", .drop = "tree_iucn_category")
-```
-
-#### All recorded species
-
-```{r}
-#| results: asis
-print_tab(fmt_tab(tab$c_species_iucn, .drop = "tree_iucn_category"), "IUCN Red List category of all recorded tree species. NA: not assessed or not identified to species level.", "tbl-iucn-all")
 ```
 
 ### Wildlife Presence and Occurrence
 
 <!-- How many plots have sign of wildlife / make a ratio forest type / How important are specific wildlife species (Shannon index) -->
 
-Plots with signs of wildlife are counted by wildlife type (@fig-wildlife, @tbl-wildlife-country and @tbl-wildlife-ftype) and by type of sign (@tbl-wildlife-sign-country and @tbl-wildlife-sign-ftype). Results by region are in Annex 2 (@fig-wildlife-region, `r annex_ref(tab$d_wildlife, "wildlife")` and `r annex_ref(tab$d_wildlife_sign, "wildlife-sign")`).
+Plots with signs of wildlife are counted by wildlife type (@fig-wildlife, @tbl-wildlife-country and @tbl-wildlife-ftype) and by type of sign (@tbl-wildlife-sign-country and @tbl-wildlife-sign-ftype). Results by region are in Annex 2 (@fig-wildlife-region, `r annex_ref(tab$d_wildlife, "wildlife")` and `r annex_ref(tab$d_wildlife_sign, "wildlife-sign")`). The full list of wildlife recorded is in Annex 4 (@tbl-wildlife-list).
 
 ```{r}
 #| label: fig-wildlife
@@ -148,6 +148,7 @@ fig$d_wildlife
 #### Wildlife types
 
 ```{r}
+#| label: 03-wildlife-type
 #| results: asis
 print_levels(tab$d_wildlife, "wildlife", "Plots with signs of wildlife, by wildlife type", .heading = "#####")
 ```
@@ -155,8 +156,39 @@ print_levels(tab$d_wildlife, "wildlife", "Plots with signs of wildlife, by wildl
 #### Types of signs
 
 ```{r}
+#| label: 03-wildlife-sign
 #| results: asis
 print_levels(tab$d_wildlife_sign, "wildlife-sign", "Plots with signs of wildlife, by type of sign", .heading = "#####")
+```
+
+#### Frequency of occurrence of wildlife species
+
+```{r}
+#| label: 03-wildlife-values
+#| include: false
+wl_list   <- tab$d_wildlife_list
+wl_n_sp   <- sum(!is.na(wl_list$wildlife_sci_name))
+wl_pct_id <- round(sum(wl_list$n_records[!is.na(wl_list$wildlife_sci_name)]) / sum(wl_list$n_records) * 100)
+wl_top    <- tab$d_wildlife_freq$country |> slice_max(n_plots, n = 3, with_ties = FALSE)
+wl_iucn   <- tab$d_wildlife_iucn$country
+```
+
+The wildlife records are presence-only, so the species are compared by their frequency of occurrence instead of an IVI or Shannon index (@sec-wildlife-analysis). `r wl_n_sp` species are identified, accounting for `r wl_pct_id`% of the records; the other records are not identified to species. The most frequent species are *`r wl_top$wildlife_sci_name[1]`*, *`r wl_top$wildlife_sci_name[2]`* and *`r wl_top$wildlife_sci_name[3]`*, recorded in `r wl_top$pct_plots[1]`%, `r wl_top$pct_plots[2]`% and `r wl_top$pct_plots[3]`% of the plots (@tbl-wildlife-freq-country and @tbl-wildlife-freq-ftype, top 10 species). The full list of species is in Annex 4 (@tbl-wildlife-list).
+
+```{r}
+#| label: 03-wildlife-freq
+#| results: asis
+print_levels(top_n_levels(tab$d_wildlife_freq, 10, "n_plots"), "wildlife-freq", "Top 10 wildlife species by frequency of occurrence", .heading = "#####")
+```
+
+#### Wildlife species in the IUCN Red List
+
+`r nrow(wl_iucn)` of the identified wildlife species are threatened or near threatened in the IUCN Red List (@tbl-wildlife-iucn-country and @tbl-wildlife-iucn-ftype): `r paste0("*", wl_iucn$wildlife_sci_name, "* (", wl_iucn$wildlife_iucn_code, ")", collapse = ", ")`. The other identified species are of Least Concern or not assessed (@tbl-wildlife-list).
+
+```{r}
+#| label: 03-wildlife-iucn
+#| results: asis
+print_levels(tab$d_wildlife_iucn, "wildlife-iucn", "Wildlife species threatened or near threatened in the IUCN Red List", .heading = "#####")
 ```
 
 ## Forest Health and Vitality
@@ -178,6 +210,7 @@ fig$e_condition
 #### Healthy and damaged trees
 
 ```{r}
+#| label: 03-health-table
 #| results: asis
 print_levels(tab$e_health, "health", "Density of healthy and damaged trees", .heading = "#####")
 ```
@@ -185,6 +218,7 @@ print_levels(tab$e_health, "health", "Density of healthy and damaged trees", .he
 #### Tree condition classes
 
 ```{r}
+#| label: 03-condition-table
 #| results: asis
 print_levels(tab$e_condition, "condition", "Tree density by condition class", .heading = "#####")
 ```
@@ -204,13 +238,73 @@ fig$f_disturbance
 ```
 
 ```{r}
+#| label: 03-disturbance-table
 #| results: asis
-print_levels(tab$f_disturbance, "disturbance", "Plots with signs of disturbance")
+print_levels(tab$f_disturbance, "disturbance", "Plots with signs of disturbance", .heading = "#####")
+```
+
+#### Disturbance intensity
+
+The intensity of the main disturbances (low, medium, high) is recorded in the plots where they are present. The accessible field plots with each disturbance are counted by intensity in @tbl-disturbance-int-country and @tbl-disturbance-int-ftype, and by forest type and region in `r annex_ref(tab$f_disturbance_int, "disturbance-int")` (Annex 2).
+
+```{r}
+#| label: 03-disturbance-intensity
+#| results: asis
+print_levels(tab$f_disturbance_int, "disturbance-int", "Plots with the main disturbances, by intensity", .heading = "#####")
 ```
 
 ### Deadwood and Litter
 
-<!-- Litter: N plots per forest type for litter depth and composition -->
+```{r}
+#| label: 03-deadwood-values
+#| include: false
+dw_ctry <- tab$m_dw_standing$country |> mutate(dw_decomposition = as.character(dw_decomposition)) |> split(~dw_decomposition)
+stump_ctry <- tab$m_stump$country |> mutate(dw_decomposition = as.character(dw_decomposition)) |> split(~dw_decomposition)
+```
+
+Standing deadwood (dead standing trees with DBH of at least 10 cm) is measured with the live trees, and its stem volume is calculated as for the live trees. At country level, there are `r dw_ctry$Total$stems_ha` dead standing stems/ha, for `r dw_ctry$Total$dw_volume_ha` m³/ha (@tbl-dw-standing-country and @tbl-dw-standing-ftype). The decomposition status is not recorded for most dead standing trees. Stumps (diameter of at least 10 cm) are also measured with the live trees, and their volume is calculated as a cylinder from their diameter and height: there are `r stump_ctry$Total$stems_ha` stumps/ha, for `r stump_ctry$Total$dw_volume_ha` m³/ha (@tbl-stump-country and @tbl-stump-ftype). Lying deadwood is measured along the 20 m transect of each plot, and its volume estimated with the line-intersect method (@tbl-dw-lying-country and @tbl-dw-lying-ftype). Results by forest type and region are in `r annex_ref(tab$m_dw_standing, "dw-standing")`, `r annex_ref(tab$m_stump, "stump")` and `r annex_ref(tab$m_dw_lying, "dw-lying")` (Annex 2).
+
+Litter depth is observed in the litter subplot, in classes. The shares of area by depth class are two-phase estimates, using the plots with a litter observation (@fig-litter, @tbl-litter-country and @tbl-litter-ftype).
+
+#### Standing deadwood
+
+```{r}
+#| label: 03-deadwood-standing
+#| results: asis
+print_levels(tab$m_dw_standing, "dw-standing", "Standing deadwood stems and volume by decomposition status", .heading = "#####")
+```
+
+#### Stumps
+
+```{r}
+#| label: 03-stump-table
+#| results: asis
+print_levels(tab$m_stump, "stump", "Stumps per hectare and stump volume by decomposition status", .heading = "#####")
+```
+
+#### Lying deadwood
+
+```{r}
+#| label: 03-deadwood-lying
+#| results: asis
+print_levels(tab$m_dw_lying, "dw-lying", "Lying deadwood volume", .heading = "#####")
+```
+
+#### Litter depth
+
+```{r}
+#| label: fig-litter
+#| fig-cap: "Share of area by litter depth class, all forest (country level) and forest types."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$m_litter
+```
+
+```{r}
+#| label: 03-litter-table
+#| results: asis
+print_levels(tab$m_litter, "litter", "Share of area by litter depth class", .heading = "#####")
+```
 
 ### Forest Structure
 
@@ -239,6 +333,7 @@ fig$h_density_height
 #### Tree density by diameter class
 
 ```{r}
+#| label: 03-dbh-table
 #| results: asis
 print_levels(tab$g_density_dbh, "density-dbh", "Tree density by diameter class", .heading = "#####")
 ```
@@ -246,6 +341,7 @@ print_levels(tab$g_density_dbh, "density-dbh", "Tree density by diameter class",
 #### Tree density by height class
 
 ```{r}
+#| label: 03-height-table
 #| results: asis
 print_levels(tab$h_density_height, "density-height", "Tree density by height class", .heading = "#####")
 ```
@@ -253,6 +349,7 @@ print_levels(tab$h_density_height, "density-height", "Tree density by height cla
 ### Forest Regeneration
 
 ```{r}
+#| label: 03-regen-values
 #| include: false
 regen_ctry <- tab$j_regen$country |> mutate(regen_class = as.character(regen_class)) |> split(~regen_class)
 ```
@@ -272,6 +369,7 @@ fig$j_regen
 #### Seedlings and saplings
 
 ```{r}
+#| label: 03-regen-table
 #| results: asis
 print_levels(tab$j_regen, "regen", "Density of seedlings and saplings", .heading = "#####")
 ```
@@ -279,6 +377,7 @@ print_levels(tab$j_regen, "regen", "Density of seedlings and saplings", .heading
 #### Main species of the regeneration
 
 ```{r}
+#| label: 03-regen-species
 #| results: asis
 print_levels(tab$j_regen_species, "regen-species", "Top 10 identified species of the regeneration by density", .heading = "#####")
 ```
@@ -288,6 +387,7 @@ print_levels(tab$j_regen_species, "regen-species", "Top 10 identified species of
 ### Non-Timber Forest Products
 
 ```{r}
+#| label: 03-ntfp-values
 #| include: false
 ntfp_ftype <- tab$k_ntfp$forest_type |> filter(ntfp_use == "Any NTFP") |> split(~forest_type)
 ```
@@ -307,6 +407,7 @@ fig$k_ntfp
 #### Share of area with NTFP
 
 ```{r}
+#| label: 03-ntfp-table
 #| results: asis
 print_levels(tab$k_ntfp, "ntfp", "Share of area with NTFP, by use category", .heading = "#####")
 ```
@@ -314,6 +415,7 @@ print_levels(tab$k_ntfp, "ntfp", "Share of area with NTFP, by use category", .he
 #### Availability
 
 ```{r}
+#| label: 03-ntfp-availability
 #| results: asis
 print_levels(tab$k_ntfp_avail, "ntfp-avail", "Plots with NTFP by use category and highest availability", .heading = "#####")
 ```
@@ -321,13 +423,17 @@ print_levels(tab$k_ntfp_avail, "ntfp-avail", "Plots with NTFP by use category an
 #### Main products
 
 ```{r}
+#| label: 03-ntfp-products
 #| results: asis
 print_levels(tab$k_ntfp_product, "ntfp-product", "Top 10 NTFP by number of plots", .heading = "#####")
 ```
 
 ### Forest Biomass and Carbon Stocks
 
+#### Aboveground biomass
+
 ```{r}
+#| label: 03-biomass-values
 #| include: false
 agb_ctry <- tab$i_biomass$country |> mutate(tree_group = as.character(tree_group)) |> split(~tree_group)
 ```
@@ -352,9 +458,46 @@ fig$i_biomass_ftype
 fig$i_biomass
 ```
 
+The variability of AGB between field clusters is shown in @fig-biomass-cluster: each point is the AGB of all trees in the part of a cluster in the forest type.
+
 ```{r}
+#| label: fig-biomass-cluster
+#| fig-cap: "Aboveground biomass of all trees by field cluster and forest type. Points: clusters, n = number of clusters."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$i_biomass_cluster
+```
+
+```{r}
+#| label: 03-biomass-table
 #| results: asis
-print_levels(tab$i_biomass, "biomass", "Aboveground biomass")
+print_levels(tab$i_biomass, "biomass", "Aboveground biomass", .heading = "#####")
+```
+
+#### Carbon stocks
+
+```{r}
+#| label: 03-carbon-values
+#| include: false
+c_ctry <- tab$n_carbon$country |> mutate(pool = as.character(pool)) |> split(~pool)
+```
+
+Carbon stocks are the biomass of each pool times the carbon fraction of 0.47 [@ipcc2006]. Belowground biomass is the AGB times the IPCC default root-to-shoot ratio of the forest type: 0.49 for mangrove forest [@ipcc2014] and 0.332 for the closed and open forests [tropical dry forest, @ipcc2019], applied to the whole country (@sec-biomass-analysis). Deadwood biomass is estimated from the volumes of standing deadwood, stumps and lying deadwood, with the wood density and the density reduction factor of the decomposition status (@sec-biomass-analysis). Litter mass is not measured, and litter carbon uses the IPCC Tier 1 defaults of mature forests: 2.4 t C/ha for the closed and open forests [tropical dry forest, @ipcc2019] and 0.7 t C/ha for mangrove forest [@ipcc2014]. The uncertainty of the total combines the uncertainties of the pools with IPCC approach 1 (@sec-biomass-analysis).
+
+At country level, the total carbon stock is `r c_ctry$Total$carbon_ha` t C/ha (ME `r c_ctry$Total$carbon_ha_mep`%), or `r format(round(c_ctry$Total$carbon_tot / 1e6, 2), nsmall = 2)` million t C in the forest area (@fig-carbon, @tbl-carbon-country and @tbl-carbon-ftype). Results by forest type and region are in `r annex_ref(tab$n_carbon, "carbon")` (Annex 2).
+
+```{r}
+#| label: fig-carbon
+#| fig-cap: "Carbon stocks by pool, country level and forest types. Error bars: 90% confidence interval of the total (IPCC approach 1)."
+#| fig-width: 6.5
+#| fig-height: 4.3
+fig$n_carbon
+```
+
+```{r}
+#| label: 03-carbon-table
+#| results: asis
+print_levels(tab$n_carbon, "carbon", "Carbon stocks by pool", .heading = "#####")
 ```
 
 ## Protective Functions of Forests
@@ -372,6 +515,7 @@ fig$l_soil
 ```
 
 ```{r}
+#| label: 03-soil-table
 #| results: asis
 print_levels(tab$l_soil, "soil", "Share of area by soil class")
 ```

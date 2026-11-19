@@ -296,13 +296,13 @@ $$y_{ijd} = a_{ij} \sum_{k \in (ij, d)} y_k \, EF_k, \qquad x_{ijd} = a_{ij} \su
 
 ### Plot level records {#sec-est-plot-records}
 
-Regeneration, NTFP and soil are recorded once per plot, in the regeneration subplot, the main plot or at the soil measurement point, and not by LULC section. The plot value $v_{ij}$ applies to all the sections of the plot, in proportion to their area:
+Regeneration, lying deadwood, NTFP, soil and litter are recorded once per plot, in the regeneration subplot, along the deadwood transect, in the main plot, at the soil measurement point or in the litter subplot, and not by LULC section. The plot value $v_{ij}$ applies to all the sections of the plot, in proportion to their area:
 
 $$y_{ijd} = a_{ij} \, v_{ij} \sum_{s \in (ij, d)} p_{ijs}$$
 
-- **Regeneration:** $v_{ij}$ is the density of seedlings or saplings in the regeneration subplot (individuals/ha, @eq-regen-density). Accessible plots without record have no regeneration.
+- **Regeneration and lying deadwood:** $v_{ij}$ is the density of seedlings or saplings in the regeneration subplot (individuals/ha, @eq-regen-density), or the volume or biomass of lying deadwood along the transect (per ha, @eq-lis-volume). Accessible plots without record have no regeneration or lying deadwood.
 - **NTFP and soil:** $v_{ij} = 1$ when the category (a NTFP use category, a soil class) is recorded in the plot, and 0 otherwise. $y_{ijd}$ is then the plot area in domain $d$ with the category, and the domain ratio estimate $\hat{R}_d$ (@sec-est-domain) is the share of the domain area with the category.
-- **Soil:** plots without observation of an attribute are treated as inaccessible plots for this attribute ($a_{ij} = 0$). The non-forest stratum has no soil observation and its virtual plots (@sec-est-nonforest) are not used.
+- **Soil and litter:** plots without observation of an attribute are treated as inaccessible plots for this attribute ($a_{ij} = 0$). The non-forest stratum has no soil observation and its virtual plots (@sec-est-nonforest) are not used.
 
 The other stages of the estimation are the same as for the tree attributes.
 
@@ -379,7 +379,7 @@ with $\alpha = 0.1$, $n = \sum_h n_h$ the number of accessible phase 2 field clu
 ### Assumptions
 
 - **Inaccessible plots** have $a_{ij} = 0$ and are left out of both the numerator and the denominator of the ratios. This assumes that, within a stratum, they are similar to the accessible plots.
-- **Trees outside the live tree allometry** (stumps, dead standing trees, and palms with their own equations) need their own attribute values, which are then added to $y_{ijd}$ at plot level (@sec-est-plot). Until then, their biomass is not included.
+- **Trees outside the live tree allometry** (stumps, dead standing trees, and palms with their own equations) need their own attribute values. Stumps and dead standing trees are estimated as separate deadwood pools, with the same estimator (@sec-biomass-analysis). The biomass of palms is not included.
 - **Baobabs** are kept out of the plot totals of the live trees. Their AGB is estimated as a separate tree group, with the same estimator, and added to the other trees for the AGB of all trees.
 - **Plot level records** (regeneration, NTFP, soil) represent the whole plot, including the plot sections in another forest type than the section of the subplot or measurement point. Most plots have a single LULC section.
 
@@ -499,11 +499,15 @@ $$ {#eq-plot-frequency}
 
 where $F_{i}$ is percentage of assessed plots in which species or wildlife group $i$ was detected; $m_{i}$ is number of assessed plots with at least one detection of species or wildlife group $i$; and $M$ is total number of plots assessed for wildlife within the corresponding reporting domain.
 
+The wildlife records are presence-only (signs and observations, without counts of individuals), so abundance-based indices such as the IVI and the Shannon index used for trees (@sec-diversity-analysis) cannot be calculated. The frequency of occurrence is the presence-only equivalent of the frequency component of the IVI. Species were ranked by their number of plots with detections, and their relative frequency was calculated as the share of the plot detections of all the identified species, $RF_{i} = 100 \, m_{i} / \sum_{j} m_{j}$.
+
 Plots assessed without wildlife detections were included. Plots that were not assessed, or whose assessment status could not be established, were excluded. Evidence of presence was summarised by type, including visual sightings, calls and other sounds, and indirect signs such as tracks, droppings, nests and feeding signs. Multiple evidence types associated with the same species in a plot were retained in the evidence summaries but represented a single plot occurrence.
 
 The summaries described wildlife recorded within the assessed plots. Non-detection was not interpreted as confirmed absence, and occurrence frequencies were not interpreted as estimates of animal abundance, density or detection-adjusted occupancy. Differences among reporting domains were interpreted with consideration of sampling effort and potential differences in detectability.
 
-The conservation status of identified wildlife species was compiled from the IUCN Red List of Threatened Species using the name-matching and documentation procedures described in @sec-diversity-analysis. Global conservation categories were included in the wildlife species list. Species classified as Vulnerable (VU), Endangered (EN) or Critically Endangered (CR) were identified as threatened, and their recorded occurrence was summarised by forest type and region. Records that could not be reliably matched to a species assessment were retained without an assigned conservation category.
+The conservation status of identified wildlife species was compiled from the IUCN Red List of Threatened Species using the name-matching and documentation procedures described in @sec-diversity-analysis. Global conservation categories were included in the wildlife species list. Species classified as Vulnerable (VU), Endangered (EN) or Critically Endangered (CR) were identified as threatened, and their recorded occurrence was summarised by forest type and region, together with the Near Threatened (NT) species. Records that could not be reliably matched to a species assessment were retained without an assigned conservation category.
+
+Wildlife names recorded as common names were given their scientific name following the IUCN Red List taxonomy before matching, and names recorded under a synonym were matched to the accepted species. Identified species without an IUCN assessment are listed as "Not assessed". Records not identified to species were left out of the species frequencies and of the conservation status summaries.
 
 <!-- REVIEW NOTE
 ***Review note***
@@ -527,7 +531,7 @@ $$ {#eq-condition-pct}
 
 where $P_{c}$ is estimated percentage of assessed live trees in condition category $c$; ${\widehat{N}}_{c}$ is estimated number of live trees in category $c$; and ${\widehat{N}}_{A}$ is estimated number of live trees assessed for the corresponding condition indicator.
 
-Recorded causes of stress or damage were analysed independently. For each cause, the percentage of assessed live trees with that cause recorded was calculated using the same estimation approach. A tree with several recorded causes contributed once to each applicable cause. Dead standing trees were summarised separately using estimated density, expressed as trees per hectare.
+Recorded causes of stress or damage were analysed independently. For each cause, the percentage of assessed live trees with that cause recorded was calculated using the same estimation approach. A tree with several recorded causes contributed once to each applicable cause. Dead standing trees were summarised separately using estimated density, expressed as stems per hectare, and stem volume (m³/ha) by decomposition status. Stem volume is the basal area times the height times a form factor of 0.67, as for the live trees.
 
 #### Forest disturbances
 
@@ -561,7 +565,7 @@ where $\widehat{V}$ was the estimated fallen-deadwood volume in m³/ha and *n* w
 
 Deadwood occurrence was summarised by the number of assessed plots with records. The recorded pieces were also summarised by decomposition category and their distribution among forest types and regions.
 
-Mean litter depth was summarised in centimetres, and litter composition was summarised by the number and percentage of assessed subplots in each recorded category. Summaries were produced by forest type and nationally/overall.
+Litter depth was recorded in classes (no litter, less than 1 cm, 1 to 5 cm, more than 5 cm). The share of the area in each class was estimated with the two-phase estimator (@sec-est-plot-records), using the plots with a litter observation. Summaries were produced by forest type and nationally.
 
 <!-- REVIEW NOTE
 ***Review Note\
@@ -651,7 +655,15 @@ The model allowed residual variation to change with diameter. Predictions includ
 
 #### Belowground biomass of living trees
 
-Belowground biomass was estimated indirectly from aboveground biomass by multiplying aboveground biomass by the applicable root-to-shoot ratio as shown in @eq-bgb. Ratios of 0.232 for tropical moist forest, 0.332 for tropical dry forest and 0.49 for mangrove forest were used. The ratios for moist and dry forests were taken from the IPCC defaults for African natural forests with aboveground biomass ≤125 t ha⁻¹ [@ipcc2019, Table 4.4], while the mangrove ratio was taken from the tropical-wet category of the IPCC Wetlands Supplement [@ipcc2014, Table 4.5]
+Belowground biomass was estimated indirectly from aboveground biomass by multiplying aboveground biomass by the applicable root-to-shoot ratio as shown in @eq-bgb. The ratio depends on the forest type of the LULC section of the tree: 0.332 (standard deviation 0.247) for the closed and open forests, the IPCC default for natural tropical dry forest in Africa with an AGB of 125 t/ha or less [@ipcc2019, Table 4.4], and 0.49 for mangrove forest, from the tropical-wet category of the IPCC Wetlands Supplement [@ipcc2014, Table 4.5]. The standard error of the mangrove ratio, 0.010, is derived from its 95% confidence interval (0.47 to 0.51). The same ratios are applied to baobabs.
+
+The IPCC ratios depend on the FAO global ecological zone (GEZ) and on the AGB of the forest. The Gambia is split between the tropical moist forest and tropical dry forest zones of the GEZ 2010 map [@fao2012gez], and closed and open forests occur in both zones (@tbl-rs-gez). For simplicity, the tropical dry forest ratio is applied to the closed and open forests of the whole country. The IPCC ratio for natural tropical moist forest in Africa is lower, 0.232 [@ipcc2019, Table 4.4], so the belowground biomass of the forests in the moist zone may be overestimated: with the ratio of the zone of each cluster, the belowground biomass of the closed and open forests would be about 14% lower. The low-AGB ratio is used because the Gambian forests are far below the 125 t/ha threshold (the ratio above the threshold is 0.379).
+
+```{r}
+#| label: 02-gez-table
+#| results: asis
+print_tab(tab$rs_gez, "Number of phase 1 points and phase 2 clusters by stratum and FAO global ecological zone (GEZ 2010). Moist: tropical moist forest; dry: tropical dry forest; no GEZ: coastal phase 1 points outside the GEZ map.", "tbl-rs-gez")
+```
 
 $$
 BGB_{i} = R_{i} \times AGB_{i}
@@ -679,7 +691,7 @@ $$ {#eq-stump}
 
 Where $B_{stump,i}$ is aboveground biomass of stump *i* (kg), $D_{stump,i}\ $ is recorded stump diameter (cm), $h_{stump,i}\ $ is stump height (m), $\rho_{i}$ is wood density (g cm⁻³), $f_{decay,i}\ $ is density reduction factor for the recorded decomposition class, 1000 is the conversion factor from tonnes to kilograms, $\pi\ $ is mathematical constant, approximately 3.1416 and 100 is conversion factor from centimetres to metres.
 
-The density reduction factors were 1.00 for sound wood, 0.80 for intermediate wood and 0.45 for rotten wood, following @unfccc2015.
+The density reduction factors were 1.00 for sound wood, 0.80 for intermediate wood and 0.45 for rotten wood, following @unfccc2015. The species wood density of the stump was used, and the median stump height was assigned to the stumps without a recorded height.
 
 Baobabs (*Adansonia digitata*) have a large, water-storing stem with a low wood density, for which the pantropical equation is not calibrated. Their AGB was calculated with @eq-agb, from their measured height and the species wood density, and reported separately from the other trees: trees without baobab, baobabs alone and all trees together.
 
@@ -687,7 +699,7 @@ Live tree, standing dead tree and stump biomass estimates were converted to a he
 
 #### Fallen-deadwood biomass
 
-Biomass of each fallen deadwood piece was estimated from its volume, calculated using Smalian's formula, and decay adjusted wood density, as shown in @eq-fdw-biomass.
+Biomass of each fallen deadwood piece was estimated from its volume, calculated using Smalian's formula, and decay adjusted wood density, as shown in @eq-fdw-biomass. The species of fallen deadwood is not recorded, and the default wood density of 0.57 g cm⁻³ was used.
 
 $$
 B_{FD,i} = 1000\left\lbrack \frac{\pi\mathcal{l}_{i}}{8}\left\{ \left( \frac{d_{s,i}}{100} \right)^{2} + \left( \frac{d_{l,i}}{100} \right)^{2} \right\} \right\rbrack\rho_{i}f_{decay,i}
@@ -707,7 +719,7 @@ This estimator used whole piece measurements and assumed that deadwood piece ori
 
 #### Carbon stocks
 
-Carbon stocks were calculated separately for live trees, standing dead trees, stumps and fallen deadwood by multiplying dry biomass by a carbon fraction of 0.47 as shown in @eq-carbon. This fraction, based on the @ipcc2006 default for aboveground forest biomass, was applied to the assessed biomass components.
+Carbon stocks were calculated separately for live trees (above and belowground biomass), standing dead trees, stumps and fallen deadwood by multiplying dry biomass by a carbon fraction of 0.47 as shown in @eq-carbon. This fraction, based on the @ipcc2006 default for aboveground forest biomass, was applied to all the woody biomass components.
 
 $$
 C_{k,p} = B_{k,p} \times 0.47
@@ -715,7 +727,19 @@ $$ {#eq-carbon}
 
 where $C_{k,p}\ $ is carbon density of biomass component $k$ in plot $p$ (t C ha⁻¹), $B_{k,p}\ $ is biomass density of component $k$ in plot $p$ (t ha⁻¹), and $0.47\ $ is the carbon fraction applied to dry biomass.
 
-Component estimates were combined to obtain carbon stocks in live trees and assessed aboveground deadwood. Results were summarised by forest type, region and overall. Total stocks were calculated by multiplying mean carbon density by the corresponding forest area. Litter, soil organic carbon and dead roots were excluded because the measurements required to estimate these pools were not measured.
+Litter carbon was not estimated from the field data, as litter depth is recorded in classes without litter mass (@sec-litter-assessment). The IPCC Tier 1 default litter carbon stocks of mature forests were used instead, by forest type of the LULC section: 2.4 t C ha⁻¹ (range 2.1 to 2.7) for the closed and open forests, the default for tropical dry forest [all vegetation types, @ipcc2019, Table 2.2], applied to the whole country as the root-to-shoot ratio (@tbl-rs-gez), and 0.7 t C ha⁻¹ (95% confidence interval 0 to 1.3) for mangrove forest [@ipcc2014, Table 4.7]. The defaults are carbon stocks and no carbon fraction is applied. Following the Tier 1 assumption, non-forest land has no litter.
+
+Component estimates were combined to obtain carbon stocks in live trees, deadwood (standing dead trees, stumps and fallen deadwood) and litter. Results were summarised by forest type, region and overall. Total stocks were calculated by multiplying mean carbon density by the corresponding forest area. Soil organic carbon and dead roots of stumps and standing dead trees were excluded, as the measurements required for these pools were not made.
+
+The uncertainty of the carbon stocks follows IPCC approach 1 (error propagation). The uncertainty $U$ of each pool is its margin of error at the 90% confidence level, in percent of the estimate. Belowground biomass and litter carbon are the product of a field estimate (AGB or forest area) and an IPCC default $F$ (the root-to-shoot ratio or the litter carbon stock): the sampling uncertainty is combined with the uncertainty of the default, $U_F = z_{0.95} \, SE_F / F$:
+
+$$U = \sqrt{U_{sampling}^2 + U_F^2}$$
+
+The standard error of a default is its standard deviation, when given by IPCC, or is derived from its 95% confidence interval or range, $SE_F = (F_{max} - F_{min}) / (2 \times 1.96)$. At country level, $U_F$ of each forest type is weighted by the pool total of the forest type. The closed and open forests share the same defaults, so their uncertainties are fully correlated and are added before being combined with the mangrove uncertainty. The uncertainty of the total carbon stock, the sum of the pools, is:
+
+$$U_{total} = \frac{\sqrt{\sum_k (U_k \, C_k)^2}}{\sum_k C_k}$$
+
+where $C_k$ is the carbon stock of pool $k$. The pools are estimated from the same plots and are not independent (belowground biomass is derived from AGB), so this uncertainty of the total is a lower bound.
 
 <!-- REVIEW NOTE
 ***Review Notes***

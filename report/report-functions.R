@@ -36,6 +36,15 @@ col_labels <- c(
   ntfp_use = "Use category", area_ntfp_pct = "Area with NTFP (%)", area_ntfp_mep = "Area ME (%)", n_products = "Products (n)",
   ntfp_name_label = "Product", n_few = "Few (n)", n_moderate = "Moderate (n)", n_abundant = "Abundant (n)",
   tree_group = "Tree group",
+  n_low = "Low (n)", n_medium = "Medium (n)", n_high = "High (n)", n_int_na = "Not recorded (n)",
+  dw_decomposition = "Decomposition", stems_ha = "Stems (n/ha)", stems_mep = "Stems ME (%)",
+  dw_volume_ha = "Volume (m³/ha)", dw_volume_mep = "Volume ME (%)",
+  litter_class = "Litter depth", litter_pct = "Share of area (%)", litter_mep = "Share ME (%)",
+  pool = "Carbon pool", carbon_ha = "Carbon (t C/ha)", carbon_ha_mep = "Carbon ME (%)",
+  carbon_tot = "Total carbon (t C)", carbon_tot_mep = "Total ME (%)",
+  wildlife_name = "Recorded name", n_records = "Records (n)",
+  wildlife_sci_name = "Species", iucn_accepted_name = "IUCN accepted name", wildlife_iucn_code = "IUCN",
+  wildlife_iucn_category = "IUCN category", rel_freq = "Relative frequency (%)",
   soil_attribute = "Attribute", soil_class = "Class", soil_pct = "Share of area (%)", soil_mep = "Share ME (%)"
 )
 
@@ -115,7 +124,9 @@ top_n_levels <- function(.tabs, .n, .var = "ivi") {
 }
 
 ## Regions of a forest type and region level table, in factor level order
+## (character regions are kept in their order of appearance)
 annex_regions <- function(.df) {
+  if (!is.factor(.df$region)) return(unique(.df$region))
   .df$region |> droplevels() |> levels()
 }
 

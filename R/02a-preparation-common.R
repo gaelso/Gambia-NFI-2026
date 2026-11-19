@@ -215,11 +215,12 @@ tree <- tree |>
 ## Family: IUCN family of the species, else of the genus, else from the wood density database, else set manually.
 
 tmp$iucn_species <- anci$iucn |>
+  filter(kingdom == "PLANTAE") |>
   arrange(iucn_status != "accepted", iucn_rank != "species") |>
   distinct(iucn_name, .keep_all = TRUE)
 
 tmp$iucn_genus_family <- anci$iucn |>
-  filter(iucn_status == "accepted", !is.na(iucn_family)) |>
+  filter(kingdom == "PLANTAE", iucn_status == "accepted", !is.na(iucn_family)) |>
   distinct(tree_genus = word(iucn_name, 1), iucn_genus_family = iucn_family) |>
   distinct(tree_genus, .keep_all = TRUE)
 

@@ -40,7 +40,7 @@ execute:
 ---
 
 ```{r}
-#| label: setup
+#| label: 00-setup
 #| include: false
 
 library(tidyverse)

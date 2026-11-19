@@ -896,7 +896,7 @@ wildlife_sign <- wildlife_sign %>%
   )
 
 ## Final long table: remove only the duplicated footprints row
-data_clean$wildlife_sign <- wildlife_sign %>%
+wildlife_sign <- wildlife_sign %>%
   filter(wildlife_sign_keep) %>%
   select(
     all_of(tmp$key_wildlife),
@@ -909,6 +909,8 @@ data_clean$wildlife_sign <- wildlife_sign %>%
     wildlife_sign_old,
     wildlife_sign_label_old
   )
+
+data_clean$wildlife_sign <- wildlife_sign
 
 
 
@@ -1982,4 +1984,8 @@ data_clean$regen <- regen
 ## Source: scripts/06_Deadwood_data_check.R
 ## All checks passed, no correction needed: raw data used as is
 
-data_clean$deadwood <- data_raw$deadwood
+deadwood <- data_raw$deadwood
+
+data_clean$deadwood <- deadwood
+
+deadwood

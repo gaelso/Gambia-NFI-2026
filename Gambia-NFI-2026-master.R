@@ -38,6 +38,8 @@ source("R/05i-biomass.R")
 source("R/05j-regeneration.R")
 source("R/05k-ntfp.R")
 source("R/05l-soil.R")
+source("R/05m-deadwood-litter.R")
+source("R/05n-carbon.R")
 
 source("R/06-two-cycles-analysis.R")
 

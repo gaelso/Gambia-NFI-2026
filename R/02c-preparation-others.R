@@ -90,43 +90,53 @@ tree$tree_biomass_ag <- with(tree, round(0.0673 * (tree_wood_density * tree_dbh^
 ## Tree Belowground Biomass ######
 ##
 
-tree$tree_biomass_bg <- NA
+## Root-to-shoot ratios (R), IPCC defaults, by forest type of the tree LULC section:
+## - Mangrove forest: 0.49, 95% CI 0.47-0.51 (IPCC 2013 Wetlands Supplement, Table 4.5), SE from the CI
+## - Other forest types: tropical dry forest, Africa, natural, AGB <= 125 t/ha: 0.332, SD 0.247
+##   (IPCC 2019 Refinement, Vol. 4, Table 4.4 Updated), applied to the whole country.
+##   The country is split between the tropical moist (TAwa) and tropical dry (TAwb) FAO GEZ (cluster_gez,
+##   02a-preparation-common.R), see the table below. The dry forest value is used everywhere for simplicity
+##   (tropical moist, Africa, natural: 0.232, +/-90%). With the GEZ of each cluster, the BGB of closed and
+##   open forests would be ~14% lower. Gambian forests are far below the 125 t/ha AGB threshold
+##   (> 125 t/ha: 0.379, SD 0.040).
+## The SE (SD for the dry forest) are used for the uncertainty of BGB (IPCC approach 1, see 05n-carbon.R).
+defaults$RS <- tibble(
+  rs_class = c("Mangrove", "Dry forest"),
+  rs       = c(0.49, 0.332),
+  rs_se    = c((0.51 - 0.47) / (2 * qnorm(0.975)), 0.247)
+)
 
-table(cluster$cluster_info_stratum)
-table(cluster$cluster_gez, cluster$cluster_gez_label, useNA = "ifany")
+## Table for the report: phase 1 points and phase 2 clusters by stratum and FAO GEZ
+## (phase 1 points outside the GEZ polygons, on the coast, are counted as "Not in GEZ layer")
+if (!exists("tab")) tab <- list()
 
-cluster_gez <- cluster |> select(cluster_no, cluster_gez, cluster_gez_label, cluster_info_stratum) 
+tmp$gez_levels <- c("TAwa" = "moist", "TAwb" = "dry", "none" = "no GEZ")
 
-##------##
-## Demonstration dry forest has AGB <= 125 tdm/ha
-# cluster_agb <- tree |> summarise(cluster_agb = sum(tree_biomass_ag * tree_cluster_weight), .by = c(cluster_no)) |>
-#   left_join(cluster_gez, by = join_by(cluster_no))
-# ggplot(cluster_agb) +
-#   geom_boxplot(aes(x = cluster_info_stratum, y = cluster_agb, fill = cluster_gez))
-# rm(cluster_agb)
-##------##
-
-## Add GEZ/Stratum info, get RS and calc BGB = AGB * RS
-tree <- tree |>
-  mutate(
-    cluster_gez = NA, 
-    cluster_gez_label = NA, 
-    cluster_info_stratum = NA
+tab$rs_gez <- bind_rows(
+  tmp$sf_ph1 |>
+    st_join(anci$sf_GEZ) |>
+    as_tibble() |>
+    transmute(phase = "Phase 1 points", stratum = ph1_stratum, gez = replace_na(gez_abbrev, "none")),
+  cluster |>
+    filter(!is.na(cluster_info_stratum)) |>
+    transmute(phase = "Phase 2 clusters", stratum = cluster_info_stratum, gez = cluster_gez)
   ) |>
-  left_join(cluster_gez, by = join_by(cluster_no), suffix = c("_rm", "")) |>
-  select(-ends_with("_rm")) |>
   mutate(
-    tree_RS = case_when(
-      cluster_info_stratum == "mangrove forest" ~ 0.49, ## Table 4.5, IPCC 2013 Wetlands Supplement 
-      cluster_gez == "TAwa" ~ 0.232, ## Table 4.4 IPCC 2019 V4CH4
-      cluster_gez == "TAwb" ~ 0.332, ## Table 4.4 IPCC 2019 V4CH4, considered all dry forest with AGB <= 125 tdm/ha
-    ),
-    tree_biomass_bg = round(tree_biomass_ag * tree_RS, 3)
-  )
+    stratum = str_to_sentence(if_else(stratum == "nonforest", "non-forest", stratum)),
+    stratum = factor(stratum, levels = c("Closed forest", "Open forest", "Mangrove forest", "Non-forest")),
+    gez = factor(tmp$gez_levels[gez], levels = tmp$gez_levels)
+  ) |>
+  count(phase, gez, stratum) |>
+  pivot_wider(names_from = c(phase, gez), names_sep = ", ", values_from = n, values_fill = 0, names_sort = TRUE) |>
+  arrange(stratum) |>
+  select(where(\(x) !is.numeric(x) || sum(x) > 0)) |>
+  rename(Stratum = stratum)
+tab$rs_gez
 
-## remove temporary columns and objects
+tmp$get_rs <- \(.ftype) if_else(.ftype == "Mangrove Forest", defaults$RS$rs[1], defaults$RS$rs[2])
+
 tree <- tree |>
-  select(-cluster_gez , -cluster_gez_label, -tree_RS)
+  mutate(tree_biomass_bg = round(tree_biomass_ag * tmp$get_rs(plot_lulc_forest_label), 3))
 
 
 
@@ -177,3 +187,4 @@ tree$tree_carbon_total <- tree$tree_biomass_total * defaults$CF
 sum(is.na(baobab$tree_height))
 
 baobab$tree_biomass_ag <- with(baobab, round(0.0673 * (tree_wood_density * tree_dbh^2 * tree_height)^0.976 / 1000, 3))
+baobab$tree_biomass_bg <- round(baobab$tree_biomass_ag * tmp$get_rs(baobab$plot_lulc_forest_label), 3)

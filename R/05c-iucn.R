@@ -8,7 +8,8 @@
 tmp$iucn_threatened <- c("CR", "EN", "VU")
 
 ## + All species with their category, for reference ####
-tab$c_species_iucn <- tree |>
+## Live trees, baobabs and palms (kept out of the live tree table for their allometry, 02a-preparation-common.R)
+tab$c_species_iucn <- bind_rows(tree, baobab, palm) |>
   filter(!is.na(tree_species_name), !tree_species_name %in% defaults$species_unidentified) |>
   summarise(
     n_trees = n(),

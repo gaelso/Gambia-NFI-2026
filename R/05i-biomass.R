@@ -98,6 +98,34 @@ fig$i_biomass_ftype <- tmp$agb_fig_ftype |>
 fig$i_biomass_ftype
 
 ggsave("results/figures/05i_biomass_ftype.png", fig$i_biomass_ftype, width = 18, height = 11, units = "cm", dpi = 300)
+
+## + Cluster level AGB by forest type ####
+## AGB (t/ha) of all trees in each field cluster and forest type: sum of the section totals / sum of the
+## section areas of the cluster in the forest type. Shows the variability between clusters.
+tmp$agb_cluster <- ph2_data |>
+  filter(access, !virtual, forest_type != "Non-forest") |>
+  select(PSU, SSU, forest_type, ssu_area) |>
+  left_join(
+    tree_to_ssu(filter(tmp$agb_tree, tree_group == "All trees"), tree_group, tree_biomass_ag * tree_weight, defaults$plot_size_dbh20, .name = "agb_tot") |>
+      select(PSU, SSU, agb_tot),
+    by = join_by(PSU, SSU)
+  ) |>
+  summarise(agb_ha = sum(replace_na(agb_tot, 0)) / sum(ssu_area), .by = c(PSU, forest_type)) |>
+  mutate(forest_type = factor(forest_type, levels = defaults$ftype_levels))
+
+fig$i_biomass_cluster <- tmp$agb_cluster |>
+  ggplot(aes(x = forest_type, y = agb_ha, fill = forest_type)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.6, width = 0.6) +
+  geom_jitter(width = 0.15, height = 0, size = 1.2, alpha = 0.7) +
+  geom_text(
+    data = count(tmp$agb_cluster, forest_type),
+    aes(x = forest_type, y = -8, label = paste0("n=", n)), inherit.aes = FALSE, size = 2.8
+  ) +
+  scale_fill_manual(values = defaults$pal_ftype, guide = "none") +
+  labs(x = "", y = "Cluster aboveground biomass (t/ha)", caption = "Points: field clusters (all trees), n = number of clusters")
+fig$i_biomass_cluster
+
+ggsave("results/figures/05i_biomass_cluster.png", fig$i_biomass_cluster, width = 18, height = 11, units = "cm", dpi = 300)
 ggsave("results/figures/05i_biomass.png", fig$i_biomass, width = 24, height = 11, units = "cm", dpi = 300)
 
 

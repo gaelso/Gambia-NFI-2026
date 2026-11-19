@@ -5,6 +5,7 @@ Comparison of the height-diameter models tested for the prediction of missing tr
 In @tbl-hd-models, RMSE and bias (prediction minus measurement) are computed on all measured heights, and the forest type bias is the largest absolute bias of a forest type. Random parameters is the number of parameters with a cluster random effect, and cluster curves the number of clusters with their own curve.
 
 ```{r}
+#| label: 05-hd-models
 #| results: asis
 print_tab(fmt_tab(tab$hd_models), "Comparison of height-diameter models", "tbl-hd-models")
 ```
@@ -18,6 +19,7 @@ Estimates for each forest type within each administrative region. Many domains h
 ## Forest area {.unnumbered}
 
 ```{r}
+#| label: 05-area-region
 #| results: asis
 print_annex(tab$a_area, "area", "Area of forest types")
 ```
@@ -25,6 +27,7 @@ print_annex(tab$a_area, "area", "Area of forest types")
 ## Tree species composition and diversity {.unnumbered}
 
 ```{r}
+#| label: 05-ivi-region
 #| results: asis
 print_annex(top_n_levels(tab$b_ivi_species, 10), "ivi-species", "Top 10 species by Importance Value Index", .drop = c("n_pp", "density", "density_mep", "basal_area", "n_sections"))
 print_annex(top_n_levels(tab$b_ivi_genus, 10), "ivi-genus", "Top 10 genera by Importance Value Index", .drop = c("n_pp", "density", "density_mep", "basal_area", "n_sections"))
@@ -35,6 +38,7 @@ print_annex(tab$b_shannon, "shannon", "Shannon diversity index")
 ## Rare, threatened and endangered tree species {.unnumbered}
 
 ```{r}
+#| label: 05-iucn-region
 #| results: asis
 print_annex(tab$c_iucn, "iucn", "Tree species in the IUCN Red List threatened categories", .drop = "tree_iucn_category")
 ```
@@ -50,6 +54,7 @@ fig$d_wildlife_region
 ```
 
 ```{r}
+#| label: 05-wildlife-region
 #| results: asis
 print_annex(tab$d_wildlife, "wildlife", "Plots with signs of wildlife, by wildlife type")
 print_annex(tab$d_wildlife_sign, "wildlife-sign", "Plots with signs of wildlife, by type of sign")
@@ -58,6 +63,7 @@ print_annex(tab$d_wildlife_sign, "wildlife-sign", "Plots with signs of wildlife,
 ## Tree health and condition {.unnumbered}
 
 ```{r}
+#| label: 05-health-region
 #| results: asis
 print_annex(tab$e_health, "health", "Density of healthy and damaged trees")
 print_annex(tab$e_condition, "condition", "Tree density by condition class")
@@ -74,8 +80,20 @@ fig$f_disturbance_region
 ```
 
 ```{r}
+#| label: 05-disturbance-region
 #| results: asis
 print_annex(tab$f_disturbance, "disturbance", "Plots with signs of disturbance")
+print_annex(tab$f_disturbance_int, "disturbance-int", "Plots with the main disturbances, by intensity")
+```
+
+## Deadwood {.unnumbered}
+
+```{r}
+#| label: 05-deadwood-region
+#| results: asis
+print_annex(tab$m_dw_standing, "dw-standing", "Standing deadwood stems and volume by decomposition status")
+print_annex(tab$m_stump, "stump", "Stumps per hectare and stump volume by decomposition status")
+print_annex(tab$m_dw_lying, "dw-lying", "Lying deadwood volume")
 ```
 
 ## Forest structure {.unnumbered}
@@ -97,6 +115,7 @@ fig$h_density_height_region
 ```
 
 ```{r}
+#| label: 05-structure-region
 #| results: asis
 print_annex(tab$g_density_dbh, "density-dbh", "Tree density by diameter class")
 print_annex(tab$h_density_height, "density-height", "Tree density by height class")
@@ -105,6 +124,7 @@ print_annex(tab$h_density_height, "density-height", "Tree density by height clas
 ## Forest regeneration {.unnumbered}
 
 ```{r}
+#| label: 05-regen-region
 #| results: asis
 print_annex(tab$j_regen, "regen", "Density of seedlings and saplings")
 ```
@@ -112,16 +132,19 @@ print_annex(tab$j_regen, "regen", "Density of seedlings and saplings")
 ## Non-timber forest products {.unnumbered}
 
 ```{r}
+#| label: 05-ntfp-region
 #| results: asis
 print_annex(tab$k_ntfp, "ntfp", "Share of area with NTFP, by use category")
 print_annex(tab$k_ntfp_avail, "ntfp-avail", "Plots with NTFP by use category and highest availability")
 ```
 
-## Forest biomass {.unnumbered}
+## Forest biomass and carbon stocks {.unnumbered}
 
 ```{r}
+#| label: 05-biomass-region
 #| results: asis
 print_annex(tab$i_biomass, "biomass", "Aboveground biomass")
+print_annex(tab$n_carbon, "carbon", "Carbon stocks by pool")
 ```
 
 # Annex 3: Top 20 taxa by Importance Value Index {#sec-annex-ivi .unnumbered}
@@ -129,6 +152,7 @@ print_annex(tab$i_biomass, "biomass", "Aboveground biomass")
 Top 20 species, genera and families by Importance Value Index (IVI), at country level and in each forest type. Definitions are in @sec-results.
 
 ```{r}
+#| label: 05-ivi-columns
 #| include: false
 ivi_drop <- c("n_pp", "density", "density_mep", "basal_area", "n_sections")
 ```
@@ -136,6 +160,7 @@ ivi_drop <- c("n_pp", "density", "density_mep", "basal_area", "n_sections")
 ## Species {.unnumbered}
 
 ```{r}
+#| label: 05-ivi-species
 #| results: asis
 print_levels(tab$b_ivi_species, "ivi-species-top20", "Top 20 species by Importance Value Index", .heading = "###", .drop = ivi_drop, .split_ftype = TRUE, .unnumbered = TRUE)
 ```
@@ -143,6 +168,7 @@ print_levels(tab$b_ivi_species, "ivi-species-top20", "Top 20 species by Importan
 ## Genera {.unnumbered}
 
 ```{r}
+#| label: 05-ivi-genus
 #| results: asis
 print_levels(tab$b_ivi_genus, "ivi-genus-top20", "Top 20 genera by Importance Value Index", .heading = "###", .drop = ivi_drop, .split_ftype = TRUE, .unnumbered = TRUE)
 ```
@@ -150,8 +176,31 @@ print_levels(tab$b_ivi_genus, "ivi-genus-top20", "Top 20 genera by Importance Va
 ## Families {.unnumbered}
 
 ```{r}
+#| label: 05-ivi-family
 #| results: asis
 print_levels(tab$b_ivi_family, "ivi-family-top20", "Top 20 families by Importance Value Index", .heading = "###", .drop = ivi_drop, .split_ftype = TRUE, .unnumbered = TRUE)
+```
+
+# Annex 4: Species lists {#sec-annex-species .unnumbered}
+
+## Tree species {.unnumbered}
+
+All tree species recorded in the field plots, including baobabs and palms, with their IUCN Red List category. NA: not assessed or not identified to species level.
+
+```{r}
+#| label: 05-species-list
+#| results: asis
+print_tab(fmt_tab(tab$c_species_iucn, .drop = "tree_iucn_category"), "Tree species recorded and their IUCN Red List category", "tbl-species-list")
+```
+
+## Wildlife {.unnumbered}
+
+All wildlife recorded in the accessible field plots, by wildlife type: scientific name, name recorded in the field when it is a common name, IUCN accepted name when the species is recorded under a synonym, and IUCN Red List category (CR Critically Endangered, EN Endangered, VU Vulnerable, NT Near Threatened, LC Least Concern, DD Data Deficient). Records not identified to species are grouped as "Not identified".
+
+```{r}
+#| label: 05-wildlife-list
+#| results: asis
+print_tab(fmt_tab(tab$d_wildlife_list), "Wildlife recorded, with IUCN Red List category", "tbl-wildlife-list")
 ```
 
 :::
