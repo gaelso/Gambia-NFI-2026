@@ -27,6 +27,8 @@ col_labels <- c(
   healthy_ha = "Healthy (trees/ha)", healthy_mep = "Healthy ME (%)", damaged_ha = "Damaged (trees/ha)", damaged_mep = "Damaged ME (%)",
   pct_healthy = "Healthy (%)", ratio_healthy_damaged = "Healthy / damaged",
   tree_condition_overall_label = "Condition", pct = "Share of trees (%)",
+  tree_condition_crown_label = "Crown condition", tree_cause = "Cause of damage",
+  pct_live = "Share of live trees (%)", pct_damaged = "Share of damaged trees (%)",
   disturbance_group = "Group", disturbance = "Disturbance",
   dbh_class = "DBH class (cm)", height_class = "Height class (m)",
   agb_ha = "AGB (t/ha)", agb_ha_mep = "AGB ME (%)", agb_tot = "Total AGB (t)", agb_tot_mep = "Total AGB ME (%)",
@@ -60,8 +62,10 @@ level_info <- tibble(
 fmt_tab <- function(.df, .level = NULL, .drop = NULL) {
   if (identical(.level, "country")) .df <- select(.df, -any_of(c("forest_type", "region")))
   if (identical(.level, "forest_type")) .df <- select(.df, -any_of("region"))
+  ## n_plots_total (accessible plots of the domain, denominator of pct_plots) repeats the same value on every
+  ## row of a domain: not shown, given in the methods (@eq-plot-frequency)
   .df <- .df |>
-    select(-any_of(.drop)) |>
+    select(-any_of(c(.drop, "n_plots_total"))) |>
     mutate(across(where(is.factor), as.character))
   names(.df) <- coalesce(col_labels[names(.df)], names(.df))
   .df

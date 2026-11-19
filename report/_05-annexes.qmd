@@ -67,6 +67,8 @@ print_annex(tab$d_wildlife_sign, "wildlife-sign", "Plots with signs of wildlife,
 #| results: asis
 print_annex(tab$e_health, "health", "Density of healthy and damaged trees")
 print_annex(tab$e_condition, "condition", "Tree density by condition class")
+print_annex(tab$e_crown, "crown", "Tree density by crown condition class")
+print_annex(tab$e_cause, "cause", "Density of damaged trees by recorded cause of damage")
 ```
 
 ## Forest disturbance {.unnumbered}

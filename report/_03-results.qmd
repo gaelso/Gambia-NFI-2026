@@ -223,6 +223,63 @@ print_levels(tab$e_health, "health", "Density of healthy and damaged trees", .he
 print_levels(tab$e_condition, "condition", "Tree density by condition class", .heading = "#####")
 ```
 
+#### Crown condition
+
+```{r}
+#| label: 03-crown-values
+#| include: false
+crown_ctry <- tab$e_crown$country |> mutate(tree_condition_crown_label = as.character(tree_condition_crown_label)) |> split(~tree_condition_crown_label)
+cause_ctry <- tab$e_cause$country |> filter(tree_cause != "Not recorded") |> arrange(desc(pct_damaged))
+sev_ctry   <- tab$e_cause_severity$country |>
+  filter(tree_condition_overall_label != "Slightly affected", tree_cause != "Not recorded", tree_cause != "Animals", tree_cause != "Other") |>
+  summarise(pct = sum(pct), .by = tree_cause) |>
+  arrange(desc(pct))
+```
+
+The crown condition of the live trees is assessed separately from their overall condition, from the foliage, dieback and structural damage of the crown. At country level, `r crown_ctry$Healthy$pct`% of the live trees have a healthy crown and `r crown_ctry[["Declining health"]]$pct`% a crown in declining health (@fig-crown, @tbl-crown-country and @tbl-crown-ftype). Results by region are in `r annex_ref(tab$e_crown, "crown")` (Annex 2).
+
+```{r}
+#| label: fig-crown
+#| fig-cap: "Share of live trees by crown condition class, all forest (country level) and forest types."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$e_crown
+```
+
+```{r}
+#| label: 03-crown-table
+#| results: asis
+print_levels(tab$e_crown, "crown", "Tree density by crown condition class", .heading = "#####")
+```
+
+#### Causes of damage
+
+The causes of damage are recorded for the damaged trees, and a tree can have several causes. Each cause is estimated separately, as the density of the damaged trees with this cause, and its shares of the live trees and of the damaged trees do not add up to 100%. Damaged trees without a recorded cause are reported as "Not recorded". At country level, the most frequent causes are `r str_to_lower(cause_ctry$tree_cause[1])`, `r str_to_lower(cause_ctry$tree_cause[2])` and `r str_to_lower(cause_ctry$tree_cause[3])`, recorded on `r cause_ctry$pct_damaged[1]`%, `r cause_ctry$pct_damaged[2]`% and `r cause_ctry$pct_damaged[3]`% of the damaged trees (@tbl-cause-country and @tbl-cause-ftype). Results by region are in `r annex_ref(tab$e_cause, "cause")` (Annex 2). The causes are attributed from visible symptoms in the field, and decline without an obvious agent may be recorded as disease.
+
+```{r}
+#| label: 03-cause-table
+#| results: asis
+print_levels(tab$e_cause, "cause", "Density of damaged trees by recorded cause of damage", .heading = "#####")
+```
+
+#### Causes and severity of damage
+
+The severity of the damage is the overall condition of the damaged trees. Most damaged trees are slightly affected, whatever the cause. The share of severely affected or dying trees is highest for `r str_to_lower(sev_ctry$tree_cause[1])` (`r sev_ctry$pct[1]`%) and lowest for `r str_to_lower(last(sev_ctry$tree_cause))` (`r last(sev_ctry$pct)`%) at country level (@fig-cause-severity, @tbl-cause-severity-country and @tbl-cause-severity-ftype).
+
+```{r}
+#| label: fig-cause-severity
+#| fig-cap: "Density of damaged trees by recorded cause and severity of the damage, country level. A tree with several causes is counted for each cause."
+#| fig-width: 6.5
+#| fig-height: 4
+fig$e_cause_severity
+```
+
+```{r}
+#| label: 03-cause-severity
+#| results: asis
+print_levels(tab$e_cause_severity, "cause-severity", "Damaged trees by recorded cause and severity of the damage", .heading = "#####")
+```
+
 ### Forest Disturbance
 
 <!-- how many plots with forest disturbances. table with disturbance cat, spread by region -->
