@@ -4,8 +4,8 @@
 ## in the circular regeneration subplot of each plot (radius 3.99 m, about 50 m2).
 ## - Density (individuals/ha): two-phase estimates (nfi_aggregate2 sub-domains). The subplot density applies to
 ##   all the LULC sections of the plot (plot_to_ssu()). Accessible plots without record have no regeneration.
-## - Species: density by species (two-phase estimates) and frequency (share of accessible field plots with
-##   the species, count_plots_by_level()). Richness: identified species recorded in the domain.
+## - Species: density by species (two-phase estimates) and occurrence (number of clusters and accessible
+##   field plots with the species, count_plots_by_level()). Richness: identified species recorded in the domain.
 
 defaults$regen_radius <- 3.99
 defaults$regen_factor <- 10000 / (pi * defaults$regen_radius^2)
@@ -91,7 +91,7 @@ tab$j_regen_species <- res_regen_species |>
   left_join(res_regen_species_freq, by = join_by(level, forest_type, region, species)) |>
   slice_max(density, n = 10, with_ties = FALSE, by = c(level, domain)) |>
   filter(forest_type != "Non-forest") |>
-  transmute(level, forest_type, region, species, regen_ha = round(density), regen_mep = Rd_mep, rel_density, pct_plots) |>
+  transmute(level, forest_type, region, species, regen_ha = round(density), regen_mep = Rd_mep, rel_density, n_clusters, n_plots) |>
   mutate(forest_type = factor(forest_type, levels = defaults$ftype_levels), region = factor(region, levels = defaults$region_levels)) |>
   arrange(level, forest_type, desc(regen_ha)) |>
   split_by_level()

@@ -60,6 +60,31 @@ plot_info <- plot_analysis |>
   filter(plot_access_lgl, !plot_virtual) |>
   select(cluster_no, plot_no, forest_type = lulc_forest_label, region = plot_region)
 
+## Phase 2 base units at plot level, for the plot level records without LULC section information (wildlife,
+## disturbances, NTFP, share_plot_levels()): one row per plot, plot area, forest type of the main LULC section
+## (as plot_info). Same domains as ph2_data, so domain_lookup applies.
+ph2_plot <- ph2_data |>
+  arrange(desc(ssu_area)) |>
+  summarise(
+    ssu_area = sum(ssu_area),
+    forest_type_main = first(forest_type),
+    .by = c(PSU, cluster_no, plot_no, access, virtual, subpop, stratum, region)
+  ) |>
+  left_join(plot_info |> select(cluster_no, plot_no, forest_type_info = forest_type), by = join_by(cluster_no, plot_no)) |>
+  mutate(
+    SSU = as.character(plot_no),
+    forest_type = coalesce(forest_type_info, forest_type_main),
+    dom_country = if_else(forest_type == "Non-forest", "Non-forest", "Forest"),
+    dom_ftype = forest_type,
+    dom_ftype_region = paste(forest_type, region, sep = " - ")
+  ) |>
+  select(-forest_type_info, -forest_type_main)
+
+## Check: one row per plot, main forest type as plot_info, same plot area total as ph2_data
+nrow(ph2_plot) == nrow(distinct(ph2_data, PSU, plot_no))
+ph2_plot |> filter(access, !virtual) |> anti_join(plot_info, by = join_by(cluster_no, plot_no, forest_type)) |> nrow()
+all.equal(sum(ph2_plot$ssu_area), sum(ph2_data$ssu_area))
+
 
 
 ##

@@ -47,7 +47,7 @@ print_annex(tab$c_iucn, "iucn", "Tree species in the IUCN Red List threatened ca
 
 ```{r}
 #| label: fig-wildlife-region
-#| fig-cap: "Share of plots with signs of wildlife, by wildlife type, forest type and region. Labels: plots with signs / accessible plots."
+#| fig-cap: "Share of area with signs of wildlife, by wildlife type, forest type and region."
 #| fig-width: 9.5
 #| fig-height: 5.5
 fig$d_wildlife_region
@@ -56,8 +56,8 @@ fig$d_wildlife_region
 ```{r}
 #| label: 05-wildlife-region
 #| results: asis
-print_annex(tab$d_wildlife, "wildlife", "Plots with signs of wildlife, by wildlife type")
-print_annex(tab$d_wildlife_sign, "wildlife-sign", "Plots with signs of wildlife, by type of sign")
+print_annex(tab$d_wildlife, "wildlife", "Share of area with signs of wildlife, by wildlife type")
+print_annex(tab$d_wildlife_sign, "wildlife-sign", "Share of area with signs of wildlife, by type of sign")
 ```
 
 ## Tree health and condition {.unnumbered}
@@ -75,7 +75,7 @@ print_annex(tab$e_cause, "cause", "Density of damaged trees by recorded cause of
 
 ```{r}
 #| label: fig-disturbance-region
-#| fig-cap: "Share of plots with signs of the main disturbances, by forest type and region. Labels: plots with signs / accessible plots."
+#| fig-cap: "Share of area with signs of the main disturbances, by forest type and region."
 #| fig-width: 9.5
 #| fig-height: 5.5
 fig$f_disturbance_region
@@ -84,8 +84,8 @@ fig$f_disturbance_region
 ```{r}
 #| label: 05-disturbance-region
 #| results: asis
-print_annex(tab$f_disturbance, "disturbance", "Plots with signs of disturbance")
-print_annex(tab$f_disturbance_int, "disturbance-int", "Plots with the main disturbances, by intensity")
+print_annex(tab$f_disturbance, "disturbance", "Share of area with signs of disturbance")
+print_annex(tab$f_disturbance_int, "disturbance-int", "Share of area with the main disturbances, and share of the affected area by intensity")
 ```
 
 ## Deadwood {.unnumbered}
@@ -137,7 +137,7 @@ print_annex(tab$j_regen, "regen", "Density of seedlings and saplings")
 #| label: 05-ntfp-region
 #| results: asis
 print_annex(tab$k_ntfp, "ntfp", "Share of area with NTFP, by use category")
-print_annex(tab$k_ntfp_avail, "ntfp-avail", "Plots with NTFP by use category and highest availability")
+print_annex(tab$k_ntfp_avail, "ntfp-avail", "Share of area with NTFP by use category, and share of this area by highest availability")
 ```
 
 ## Forest biomass and carbon stocks {.unnumbered}

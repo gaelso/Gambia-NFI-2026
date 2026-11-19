@@ -2,12 +2,13 @@
 
 ## NTFP recorded in the main plot, with one or more use categories (edible, medicinal, craft, resins & oil,
 ## other) and their availability in the plot (few, moderate, abundant). No quantities are recorded.
-## - Share of area with NTFP (%): two-phase estimates (nfi_aggregate2 sub-domains) of the share of the domain
-##   area in plots with at least one NTFP of each use category. The plot presence applies to all the LULC
-##   sections of the plot (plot_to_ssu()). Accessible plots without record have no NTFP.
-## - Availability: number and share of accessible field plots with each use category, by the highest
-##   availability recorded in the plot for this use (count_plots_by_level()).
-## - Products: number and share of accessible field plots with each product (count_plots_by_level()).
+## NTFP are recorded at plot level, without LULC section information.
+## - Share of area with NTFP (%): two-phase estimates of the share of the domain area with at least one NTFP of
+##   each use category, with the plot as base unit and the cluster as PSU (share_plot_levels()). Accessible
+##   plots without record have no NTFP.
+## - Availability: share of the area with each use category (%) by the highest availability recorded in the
+##   plot for this use, from the two-phase shares of area of each use x availability.
+## - Products: number of clusters and plots with each product (descriptive counts, count_plots_by_level()).
 
 tmp$ntfp_levels_use   <- c("Any NTFP", "Edible", "Medicinal", "Craft", "Resins & Oil", "Other")
 tmp$ntfp_levels_avail <- c("Few", "Moderate", "Abundant")
@@ -21,19 +22,7 @@ tmp$ntfp_use <- ntfp_type |>
 tmp$ntfp_use |> anti_join(plot_info, by = join_by(cluster_no, plot_no)) |> nrow()
 
 ## + Share of area with NTFP, by use category ####
-tmp$ntfp_plot_use <- tmp$ntfp_use |>
-  distinct(cluster_no, plot_no, ntfp_use) |>
-  mutate(presence = 1)
-
-res_ntfp <- nfi_aggregate_levels(
-  .levels = vec_levels,
-  .ph1_df = ph1_data, .ph2_sp = ph2_data, .attr_y = ntfp_area, .attr_x = ssu_area,
-  .aoi_area = defaults$country_area_nowater,
-  .ph2_sub = plot_to_ssu(tmp$ntfp_plot_use, ph2_data, ntfp_use, presence, .name = "ntfp_area"),
-  .class_sub = ntfp_use
-  ) |>
-  left_join(domain_lookup, by = join_by(level, domain)) |>
-  mutate(share = Yd / Xd)
+res_ntfp <- share_plot_levels(tmp$ntfp_use, ntfp_use)
 
 ## + Availability by use category ####
 ## Highest availability recorded in the plot for each use category
@@ -42,9 +31,8 @@ tmp$ntfp_avail <- tmp$ntfp_use |>
   summarise(ntfp_avail = max(ntfp_status_label), .by = c(cluster_no, plot_no, ntfp_use)) |>
   mutate(use_avail = paste(ntfp_use, ntfp_avail, sep = "|"))
 
-res_ntfp_avail <- count_plots_by_level(tmp$ntfp_avail, plot_info, use_avail) |>
-  separate_wider_delim(use_avail, delim = "|", names = c("ntfp_use", "ntfp_avail")) |>
-  select(level, forest_type, region, ntfp_use, ntfp_avail, n_plots, n_plots_total, pct_plots)
+res_ntfp_avail <- share_plot_levels(tmp$ntfp_avail, use_avail) |>
+  separate_wider_delim(use_avail, delim = "|", names = c("ntfp_use", "ntfp_avail"))
 
 ## + Products ####
 res_ntfp_product <- count_plots_by_level(ntfp, plot_info, ntfp_name_label)
@@ -60,51 +48,42 @@ tab$k_ntfp <- res_ntfp |>
     ntfp_use = factor(ntfp_use, levels = tmp$ntfp_levels_use),
     n_products = if_else(ntfp_use == "Any NTFP", replace_na(n_products, 0L), NA_integer_)
   ) |>
-  transmute(level, forest_type, region, n_pp, ntfp_use, area_ntfp_pct = round(share * 100, 1), area_ntfp_mep = Rd_mep, n_products) |>
+  transmute(level, forest_type, region, n_pp, ntfp_use, n_clusters, n_plots, area_ntfp_pct = round(share * 100, 1), area_ntfp_mep = Rd_mep, n_products) |>
   mutate(forest_type = factor(forest_type, levels = defaults$ftype_levels), region = factor(region, levels = defaults$region_levels)) |>
   arrange(level, forest_type, region, ntfp_use) |>
   split_by_level()
 tab$k_ntfp$forest_type
 
-## Plots by use category and highest availability, one column per availability class
+## Share of the area with each use category (%) by highest availability, one column per availability class.
+## Domains without NTFP (e.g. mangrove forest): row 'Any NTFP' with 0% of the area.
 tab$k_ntfp_avail <- res_ntfp_avail |>
   mutate(ntfp_avail = factor(ntfp_avail, levels = tmp$ntfp_levels_avail)) |>
-  arrange(ntfp_avail) |>
-  pivot_wider(id_cols = c(level, forest_type, region, ntfp_use, n_plots_total), names_from = ntfp_avail, values_from = n_plots, values_fill = 0) |>
-  mutate(
-    n_plots = Few + Moderate + Abundant,
-    pct_plots = round(n_plots / n_plots_total * 100, 1),
-    ntfp_use = factor(ntfp_use, levels = tmp$ntfp_levels_use),
-    forest_type = factor(forest_type, levels = defaults$ftype_levels),
-    region = factor(region, levels = defaults$region_levels)
+  mutate(pct = share / sum(share) * 100, .by = c(level, domain, ntfp_use)) |>
+  filter(!is.na(pct)) |>
+  select(level, forest_type, region, ntfp_use, ntfp_avail, pct) |>
+  pivot_wider(names_from = ntfp_avail, values_from = pct, values_fill = 0, names_expand = TRUE) |>
+  right_join(
+    res_ntfp |> filter(share > 0 | ntfp_use == "Any NTFP") |> select(level, forest_type, region, ntfp_use, n_pp, n_clusters, n_plots, share, Rd_mep),
+    by = join_by(level, forest_type, region, ntfp_use)
   ) |>
-  select(level, forest_type, region, ntfp_use, n_plots_total, n_plots, pct_plots, n_few = Few, n_moderate = Moderate, n_abundant = Abundant)
-
-## Domains without NTFP (e.g. mangrove forest): one row 'Any NTFP' with 0 plots
-tmp$ntfp_plots_total <- count_plots_by_level(mutate(plot_info, all = "all"), plot_info, all) |>
-  mutate(forest_type = factor(forest_type, levels = defaults$ftype_levels), region = factor(region, levels = defaults$region_levels))
-
-tab$k_ntfp_avail <- tab$k_ntfp_avail |>
-  bind_rows(
-    tmp$ntfp_plots_total |>
-      anti_join(tab$k_ntfp_avail, by = join_by(level, forest_type, region)) |>
-      transmute(
-        level, forest_type, region, ntfp_use = factor("Any NTFP", levels = tmp$ntfp_levels_use), n_plots_total,
-        n_plots = 0L, pct_plots = 0, n_few = 0L, n_moderate = 0L, n_abundant = 0L
-      )
+  transmute(
+    level, forest_type, region, n_pp,
+    ntfp_use = factor(ntfp_use, levels = tmp$ntfp_levels_use),
+    n_clusters, n_plots, area_ntfp_pct = round(share * 100, 1), area_ntfp_mep = Rd_mep,
+    pct_few = round(replace_na(Few, 0), 1), pct_moderate = round(replace_na(Moderate, 0), 1), pct_abundant = round(replace_na(Abundant, 0), 1)
   ) |>
   arrange(level, forest_type, region, ntfp_use) |>
   split_by_level()
 tab$k_ntfp_avail$forest_type
 
-## Top 10 products by number of plots, country and forest type levels
+## Top 10 products by number of clusters and plots, country and forest type levels
 tab$k_ntfp_product <- res_ntfp_product |>
   filter(level != "forest_type_region", forest_type != "Non-forest") |>
-  slice_max(n_plots, n = 10, with_ties = FALSE, by = c(level, forest_type, region)) |>
-  mutate(forest_type = factor(forest_type, levels = defaults$ftype_levels)) |>
-  transmute(level, forest_type, region, ntfp_name_label, n_plots, n_plots_total, pct_plots) |>
+  arrange(desc(n_clusters), desc(n_plots)) |>
+  slice_head(n = 10, by = c(level, forest_type, region)) |>
+  transmute(level, forest_type, region, ntfp_name_label, n_clusters, n_plots) |>
   mutate(forest_type = factor(forest_type, levels = defaults$ftype_levels), region = factor(region, levels = defaults$region_levels)) |>
-  arrange(level, forest_type, desc(n_plots)) |>
+  arrange(level, forest_type, desc(n_clusters), desc(n_plots)) |>
   split_by_level()
 tab$k_ntfp_product$country
 

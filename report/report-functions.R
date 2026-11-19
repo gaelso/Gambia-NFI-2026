@@ -14,7 +14,7 @@ theme_set(theme_bw())
 
 ## Column labels for display
 col_labels <- c(
-  forest_type = "Forest type", region = "Region", n_pp = "Plots (n)", land_cover = "Land cover",
+  forest_type = "Forest type", region = "Region", n_pp = "Clusters (n)", land_cover = "Land cover",
   area_ha = "Area (ha)", area_mep = "Area ME (%)", area_pct = "Share of country (%)",
   species = "Species", genus = "Genus", family = "Family", taxon_level = "Taxon level",
   density = "Density (trees/ha)", density_ha = "Density (trees/ha)", density_mep = "Density ME (%)",
@@ -23,6 +23,7 @@ col_labels <- c(
   H = "Shannon H'", H_me = "H' ME", H_mep = "H' ME (%)", richness = "Richness", evenness = "Evenness",
   tree_species_name = "Species", tree_family = "Family", tree_iucn_code = "IUCN", tree_iucn_category = "IUCN category",
   n_trees = "Trees (n)", n_plots = "Plots with record (n)", n_plots_total = "Accessible plots (n)", pct_plots = "Plots with record (%)",
+  n_clusters = "Clusters with record (n)", rec_pct = "Share of area (%)", rec_mep = "Share ME (%)",
   wildlife_type_label = "Wildlife type", wildlife_sign_label = "Type of sign",
   healthy_ha = "Healthy (trees/ha)", healthy_mep = "Healthy ME (%)", damaged_ha = "Damaged (trees/ha)", damaged_mep = "Damaged ME (%)",
   pct_healthy = "Healthy (%)", ratio_healthy_damaged = "Healthy / damaged",
@@ -36,9 +37,9 @@ col_labels <- c(
   hd_bias_ftype = "Max. forest type bias (m)", hd_n_curves = "Cluster curves (n)", hd_n_decreasing = "Decreasing curves (n)",
   regen_class = "Regeneration", regen_ha = "Density (ind./ha)", regen_mep = "Density ME (%)",
   ntfp_use = "Use category", area_ntfp_pct = "Area with NTFP (%)", area_ntfp_mep = "Area ME (%)", n_products = "Products (n)",
-  ntfp_name_label = "Product", n_few = "Few (n)", n_moderate = "Moderate (n)", n_abundant = "Abundant (n)",
+  ntfp_name_label = "Product", pct_few = "Few (%)", pct_moderate = "Moderate (%)", pct_abundant = "Abundant (%)",
   tree_group = "Tree group",
-  n_low = "Low (n)", n_medium = "Medium (n)", n_high = "High (n)", n_int_na = "Not recorded (n)",
+  pct_low = "Low (%)", pct_medium = "Medium (%)", pct_high = "High (%)", pct_int_na = "Not recorded (%)",
   dw_decomposition = "Decomposition", stems_ha = "Stems (n/ha)", stems_mep = "Stems ME (%)",
   dw_volume_ha = "Volume (m³/ha)", dw_volume_mep = "Volume ME (%)",
   litter_class = "Litter depth", litter_pct = "Share of area (%)", litter_mep = "Share ME (%)",
@@ -62,8 +63,7 @@ level_info <- tibble(
 fmt_tab <- function(.df, .level = NULL, .drop = NULL) {
   if (identical(.level, "country")) .df <- select(.df, -any_of(c("forest_type", "region")))
   if (identical(.level, "forest_type")) .df <- select(.df, -any_of("region"))
-  ## n_plots_total (accessible plots of the domain, denominator of pct_plots) repeats the same value on every
-  ## row of a domain: not shown, given in the methods (@eq-plot-frequency)
+  ## n_plots_total (accessible plots of the domain) repeats the same value on every row of a domain: not shown
   .df <- .df |>
     select(-any_of(c(.drop, "n_plots_total"))) |>
     mutate(across(where(is.factor), as.character))

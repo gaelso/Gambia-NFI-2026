@@ -68,7 +68,7 @@ fig$i_biomass <- tmp$agb_fig |>
   ) +
   scale_fill_manual(values = c("Trees without baobab" = "#558b2f", "Baobab" = "#d4a017")) +
   facet_wrap(~forest_type, nrow = 1, scales = "free_x") +
-  labs(x = "", y = "Aboveground biomass (t/ha)", fill = "", caption = "Error bars: 90% confidence interval of all trees, n = number of plots") +
+  labs(x = "", y = "Aboveground biomass (t/ha)", fill = "", caption = "Error bars: 90% confidence interval of all trees, n = number of clusters") +
   theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1))
 fig$i_biomass
 
@@ -93,7 +93,7 @@ fig$i_biomass_ftype <- tmp$agb_fig_ftype |>
     aes(y = agb_ha + agb_ha_me, label = paste0("n=", n_pp)), vjust = -0.5, size = 2.5
   ) +
   scale_fill_manual(values = c("Trees without baobab" = "#558b2f", "Baobab" = "#d4a017")) +
-  labs(x = "", y = "Aboveground biomass (t/ha)", fill = "", caption = "Error bars: 90% confidence interval of all trees, n = number of plots") +
+  labs(x = "", y = "Aboveground biomass (t/ha)", fill = "", caption = "Error bars: 90% confidence interval of all trees, n = number of clusters") +
   theme(legend.position = "bottom")
 fig$i_biomass_ftype
 

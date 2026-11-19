@@ -296,12 +296,13 @@ $$y_{ijd} = a_{ij} \sum_{k \in (ij, d)} y_k \, EF_k, \qquad x_{ijd} = a_{ij} \su
 
 ### Plot level records {#sec-est-plot-records}
 
-Regeneration, lying deadwood, NTFP, soil and litter are recorded once per plot, in the regeneration subplot, along the deadwood transect, in the main plot, at the soil measurement point or in the litter subplot, and not by LULC section. The plot value $v_{ij}$ applies to all the sections of the plot, in proportion to their area:
+Regeneration, lying deadwood, soil and litter are recorded once per plot, in the regeneration subplot, along the deadwood transect, at the soil measurement point or in the litter subplot, and not by LULC section. The plot value $v_{ij}$ applies to all the sections of the plot, in proportion to their area:
 
 $$y_{ijd} = a_{ij} \, v_{ij} \sum_{s \in (ij, d)} p_{ijs}$$
 
 - **Regeneration and lying deadwood:** $v_{ij}$ is the density of seedlings or saplings in the regeneration subplot (individuals/ha, @eq-regen-density), or the volume or biomass of lying deadwood along the transect (per ha, @eq-lis-volume). Accessible plots without record have no regeneration or lying deadwood.
-- **NTFP and soil:** $v_{ij} = 1$ when the category (a NTFP use category, a soil class) is recorded in the plot, and 0 otherwise. $y_{ijd}$ is then the plot area in domain $d$ with the category, and the domain ratio estimate $\hat{R}_d$ (@sec-est-domain) is the share of the domain area with the category.
+- **Soil:** $v_{ij} = 1$ when the soil class is recorded in the plot, and 0 otherwise. $y_{ijd}$ is then the plot area in domain $d$ with the class, and the domain ratio estimate $\hat{R}_d$ (@sec-est-domain) is the share of the domain area with the class.
+- **Wildlife, disturbances and NTFP:** these are presence records of the whole plot, and the sign or product cannot be located in a LULC section. The base unit is then the plot instead of the plot LULC section: each plot is assigned to the domain of its main LULC section, with $x_{ijd}$ the plot area, and $y_{ijd}$ the plot area when the category (a wildlife type or sign, a disturbance, a NTFP use category) is recorded in the plot, 0 otherwise. The domain ratio estimate $\hat{R}_d$ is the share of the domain area with the category. The cluster remains the primary sampling unit for the variance (@sec-est-variance), so that records repeated in the plots of a cluster are not counted as independent observations.
 - **Soil and litter:** plots without observation of an attribute are treated as inaccessible plots for this attribute ($a_{ij} = 0$). The non-forest stratum has no soil observation and its virtual plots (@sec-est-nonforest) are not used.
 
 The other stages of the estimation are the same as for the tree attributes.
@@ -491,17 +492,13 @@ Wildlife occurrence was assessed using species richness, frequency of occurrence
 
 Species richness was calculated as the number of distinct identified species recorded within each reporting domain. Records identified only to a broader taxonomic group were retained in the wildlife inventory but were not counted as additional species. Richness summaries were presented alongside the number of plots assessed to support interpretation of differences in sampling effort.
 
-Frequency of occurrence was calculated as the number of assessed plots in which a species or wildlife group was detected. Each species or group was counted once per plot, irrespective of the number of records or evidence types associated with it. The percentage of assessed plots with detections was calculated using @eq-plot-frequency:
+For the wildlife groups and the types of evidence, the occurrence was estimated as the share of the area with a record, with the two-phase estimator and the plot as base unit (@sec-est-plot-records). Each group or type of evidence was counted once per plot, irrespective of the number of records associated with it. Plots are grouped in clusters, and the margin of error of the share of area accounts for records repeated in the plots of a cluster.
 
-$$
-F_{i} = \frac{m_{i}}{M} \times 100
-$$ {#eq-plot-frequency}
+For the species, most of them recorded in few plots, the frequency of occurrence was given as descriptive counts: the number of clusters $k_{i}$ and the number of accessible field plots $m_{i}$ with at least one detection of species $i$. The number of clusters is the number of independent sampling units with the species.
 
-where $F_{i}$ is percentage of assessed plots in which species or wildlife group $i$ was detected; $m_{i}$ is number of assessed plots with at least one detection of species or wildlife group $i$; and $M$ is total number of plots assessed for wildlife within the corresponding reporting domain.
+For the counts and the shares of area, each plot is assigned to the forest type of its main LULC section, and the country level comprises the forest plots only. The same approach is used for the disturbances (@sec-health-analysis) and the NTFP (@sec-ntfp-analysis), and the same descriptive counts for the threatened tree species and the species of the regeneration.
 
-$M$ is the number of accessible field plots of the reporting domain, including the plots without record. Each plot is assigned to the forest type of its main LULC section, and the country level comprises the forest plots only. At country level, $M$ = `r sum(tab$d_wildlife$forest_type |> distinct(forest_type, n_plots_total) |> pull(n_plots_total))` plots (`r tab$d_wildlife$forest_type |> distinct(forest_type, n_plots_total) |> mutate(txt = paste(n_plots_total, str_to_lower(forest_type))) |> pull(txt) |> paste(collapse = ", ")`). The same plot totals are used for all the percentages of plots in this report (wildlife, disturbances, NTFP, threatened tree species and regeneration species), and are not repeated in the tables.
-
-The wildlife records are presence-only (signs and observations, without counts of individuals), so abundance-based indices such as the IVI and the Shannon index used for trees (@sec-diversity-analysis) cannot be calculated. The frequency of occurrence is the presence-only equivalent of the frequency component of the IVI. Species were ranked by their number of plots with detections, and their relative frequency was calculated as the share of the plot detections of all the identified species, $RF_{i} = 100 \, m_{i} / \sum_{j} m_{j}$.
+The wildlife records are presence-only (signs and observations, without counts of individuals), so abundance-based indices such as the IVI and the Shannon index used for trees (@sec-diversity-analysis) cannot be calculated. The frequency of occurrence is the presence-only equivalent of the frequency component of the IVI. Species were ranked by their number of clusters and plots with detections, and their relative frequency was calculated as the share of the plot detections of all the identified species, $RF_{i} = 100 \, m_{i} / \sum_{j} m_{j}$.
 
 Plots assessed without wildlife detections were included. Plots that were not assessed, or whose assessment status could not be established, were excluded. Evidence of presence was summarised by type, including visual sightings, calls and other sounds, and indirect signs such as tracks, droppings, nests and feeding signs. Multiple evidence types associated with the same species in a plot were retained in the evidence summaries but represented a single plot occurrence.
 
@@ -514,7 +511,7 @@ Wildlife names recorded as common names were given their scientific name followi
 <!-- REVIEW NOTE
 ***Review note***
 
-*This draft records agreed analytical approach for your review. Please implement or reconcile it with the final analysis. @eq-plot-frequency describes an unweighted sample percentage; if design-weighted population estimates are produced, revise the equation and accompanying explanation accordingly.*
+*This draft records agreed analytical approach for your review. Please implement or reconcile it with the final analysis.*
 
 -->
 ### Forest health and condition {#sec-health-analysis}
@@ -537,7 +534,7 @@ Recorded causes of stress or damage were analysed independently, for the damaged
 
 #### Forest disturbances
 
-Forest disturbances were summarised by type, including grazing, fire, branch and top removal, tree harvesting and other recorded disturbances. Each disturbance was analysed independently using the number and percentage of assessed plots where it was present. Plot percentages were calculated using the approach in @eq-plot-frequency, with the numerator representing plots with the corresponding disturbance. For each disturbance, intensity was summarised as the percentage of affected plots classified as low, medium or high. These intensity percentages summed to 100% among affected plots with an intensity assessment. Harvesting methods were summarised for plots where tree harvesting was recorded.
+Forest disturbances were summarised by type, including grazing, fire, branch and top removal, tree harvesting and other recorded disturbances. Each disturbance was analysed independently as the share of the area with signs of the disturbance, with the two-phase estimator and the plot as base unit (@sec-est-plot-records), together with the number of clusters and plots where it was present. For each main disturbance, the share of area of the disturbance with each intensity (low, medium or high) was estimated in the same way, and the intensity was summarised as the percentage of the affected area in each intensity class, summing to 100%. Harvesting methods were summarised for plots where tree harvesting was recorded.
 
 #### Fallen deadwood and litter
 
@@ -571,7 +568,7 @@ Litter depth was recorded in classes (no litter, less than 1 cm, 1 to 5 cm, more
 
 <!-- REVIEW NOTE
 ***Review Note\
-**This draft describes approach for implementation or reconciliation with the final analysis.. The current disturbance percentages describe assessed plots; revise @eq-plot-frequency and the wording if design-weighted population estimates are used. Confirm the line-intersect estimator. [@eq-smalian; @eq-lis-weight; @eq-lis-volume] describe the proposed approach, pending implementation.*
+**This draft describes approach for implementation or reconciliation with the final analysis.. Confirm the line-intersect estimator. [@eq-smalian; @eq-lis-weight; @eq-lis-volume] describe the proposed approach, pending implementation.*
 
 -->
 ### Forest structure and regeneration {#sec-structure-analysis}
@@ -616,17 +613,17 @@ $$ {#eq-regen-density}
 
 where $D_{kp}$ is density of regeneration category *k* in plot *P*, in individuals/ha; $n_{kp}\ $ is number of individuals in category *k* recorded in the regeneration subplot; and *k* is seedlings or saplings.
 
-Plot level densities were aggregated to forest type, region and country with the two-phase estimator, the subplot density applying to all the LULC sections of the plot (@sec-est-plot-records). The density of each species was estimated in the same way, and its frequency is the percentage of accessible field plots with at least one seedling or sapling of the species (@eq-plot-frequency). Species richness was calculated separately for seedlings and saplings as the number of distinct identified species recorded in the accessible field plots of each forest type, region and the country.
+Plot level densities were aggregated to forest type, region and country with the two-phase estimator, the subplot density applying to all the LULC sections of the plot (@sec-est-plot-records). The density of each species was estimated in the same way, and its occurrence is the number of clusters and accessible field plots with at least one seedling or sapling of the species (@sec-wildlife-analysis). Species richness was calculated separately for seedlings and saplings as the number of distinct identified species recorded in the accessible field plots of each forest type, region and the country.
 
 ### Non-timber forest products {#sec-ntfp-analysis}
 
 Non-timber forest products (NTFPs) were analysed using product richness, frequency of occurrence, use categories and availability. Summaries were produced by forest type, region and nationally/overall. A list of distinct NTFPs was compiled from the inventory records. Product richness was calculated as the number of distinct products recorded within each reporting group.
 
-Frequency of occurrence was calculated as the number of assessed plots in which each NTFP was recorded. Each product was counted once per plot, irrespective of the number of associated use categories. The percentage of assessed plots containing each product was calculated using @eq-plot-frequency, with the numerator representing plots containing the corresponding NTFP.
+Frequency of occurrence of each product was given as the number of clusters and assessed plots in which the product was recorded (@sec-wildlife-analysis). Each product was counted once per plot, irrespective of the number of associated use categories.
 
-NTFPs were summarised under five use categories: edible, medicinal, craft, resins and oil, and other uses. Products with multiple recorded uses contributed to each applicable category. For each use category, and for all NTFPs together, the share of the area of each forest type, region and the country with at least one product of the category was estimated with the two-phase estimator (@sec-est-plot-records). As no quantities were recorded, this share of area is the indicator of the productive function of forests for NTFPs.
+NTFPs were summarised under five use categories: edible, medicinal, craft, resins and oil, and other uses. Products with multiple recorded uses contributed to each applicable category. For each use category, and for all NTFPs together, the share of the area of each forest type, region and the country with at least one product of the category was estimated with the two-phase estimator, with the plot as base unit (@sec-est-plot-records). As no quantities were recorded, this share of area is the indicator of the productive function of forests for NTFPs.
 
-Availability was analysed using the field categories Few, Moderate and Abundant. For each use category, the accessible field plots with at least one product of the category were counted by the highest availability recorded in the plot for this category. These summaries retained the qualitative availability assessments made during the inventory.
+Availability was analysed using the field categories Few, Moderate and Abundant. For each use category, the share of area with the category was split by the highest availability recorded in the plot for this category, as a percentage of the area with the category (summing to 100%). These summaries retained the qualitative availability assessments made during the inventory.
 
 ### Biomass and carbon {#sec-biomass-analysis}
 

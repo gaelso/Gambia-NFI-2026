@@ -1,8 +1,10 @@
+## d. Wildlife ####
 
-## d. Plots with signs of wildlife ####
-
-## Number and share of accessible field plots with at least one wildlife record, by wildlife type and
-## by type of sign. Forest type of the plot main LULC section.
+## Wildlife is recorded at plot level, without LULC section information.
+## - Wildlife types and signs: share of the domain area with signs of wildlife (%), two-phase estimates with
+##   the plot as base unit and the cluster as PSU (share_plot_levels()), with the number of clusters and plots
+##   with a record. Forest type of the plot main LULC section.
+## - Species: number of clusters and plots with a record (descriptive counts, most species are rare).
 
 ## + By wildlife type ####
 tmp$wildlife_type <- bind_rows(
@@ -10,12 +12,7 @@ tmp$wildlife_type <- bind_rows(
   wildlife |> distinct(cluster_no, plot_no) |> mutate(wildlife_type_label = "Any wildlife")
 )
 
-res_wildlife <- count_plots_by_level(tmp$wildlife_type, plot_info, wildlife_type_label) |>
-  mutate(
-    forest_type = factor(forest_type, levels = defaults$ftype_levels),
-    region = factor(region, levels = defaults$region_levels)
-  ) |>
-  arrange(level, forest_type, region, wildlife_type_label)
+res_wildlife <- share_plot_levels(tmp$wildlife_type, wildlife_type_label)
 
 ## + By type of sign ####
 tmp$wildlife_sign <- wildlife_sign |>
@@ -23,16 +20,25 @@ tmp$wildlife_sign <- wildlife_sign |>
   left_join(wildlife |> select(cluster_no, plot_no, wildlife_id, wildlife_type_label), by = join_by(cluster_no, plot_no, wildlife_id)) |>
   select(cluster_no, plot_no, wildlife_sign_label)
 
-res_wildlife_sign <- count_plots_by_level(tmp$wildlife_sign, plot_info, wildlife_sign_label) |>
-  mutate(
-    forest_type = factor(forest_type, levels = defaults$ftype_levels),
-    region = factor(region, levels = defaults$region_levels)
-  ) |>
-  arrange(level, forest_type, region, desc(n_plots))
+res_wildlife_sign <- share_plot_levels(tmp$wildlife_sign, wildlife_sign_label)
 
 ## + Tables ####
-tab$d_wildlife      <- split_by_level(res_wildlife)
-tab$d_wildlife_sign <- split_by_level(res_wildlife_sign)
+## Share of area with signs (%) with margin of error, clusters and plots with a record
+tmp$wildlife_type_levels <- c("Any wildlife", "Birds", "Mammals", "Reptiles", "Amphibians", "Fishes", "Others")
+
+tab$d_wildlife <- res_wildlife |>
+  transmute(
+    level, forest_type, region, n_pp,
+    wildlife_type_label = factor(wildlife_type_label, levels = tmp$wildlife_type_levels),
+    n_clusters, n_plots, rec_pct = round(share * 100, 1), rec_mep = Rd_mep
+  ) |>
+  arrange(level, forest_type, region, wildlife_type_label) |>
+  split_by_level()
+
+tab$d_wildlife_sign <- res_wildlife_sign |>
+  transmute(level, forest_type, region, n_pp, wildlife_sign_label, n_clusters, n_plots, rec_pct = round(share * 100, 1), rec_mep = Rd_mep) |>
+  arrange(level, forest_type, region, desc(rec_pct)) |>
+  split_by_level()
 tab$d_wildlife$forest_type
 
 save_tables(tab$d_wildlife, "05d_wildlife")
@@ -93,7 +99,7 @@ tmp$wildlife_species |> filter(str_count(wildlife_sci_name, " ") != 1 | str_dete
 
 ## + Frequency of occurrence of the wildlife species ####
 ## Presence-only records (signs, no counts): the frequency of occurrence replaces the density and dominance
-## components of the IVI. For each species: plots with a record (n and % of the accessible field plots) and
+## components of the IVI. For each species: clusters and plots with a record (descriptive counts) and
 ## relative frequency (% of the plot records of all identified species). Forest type of the plot main LULC
 ## section. Records not identified to species are left out.
 tmp$wildlife_occ <- wildlife |>
@@ -114,15 +120,15 @@ res_wildlife_freq <- count_plots_by_level(tmp$wildlife_occ, plot_info, wildlife_
     region = factor(region, levels = defaults$region_levels),
     wildlife_iucn_code = factor(wildlife_iucn_code, levels = tmp$wildlife_iucn_levels)
   ) |>
-  select(level, forest_type, region, wildlife_sci_name, wildlife_type_label, wildlife_iucn_code, n_plots, n_plots_total, pct_plots, rel_freq) |>
-  arrange(level, forest_type, region, desc(n_plots), wildlife_sci_name)
+  select(level, forest_type, region, wildlife_sci_name, wildlife_type_label, wildlife_iucn_code, n_clusters, n_plots, rel_freq) |>
+  arrange(level, forest_type, region, desc(n_clusters), desc(n_plots), wildlife_sci_name)
 
 ## Threatened and near threatened species (CR, EN, VU, NT)
 res_wildlife_iucn <- res_wildlife_freq |>
   filter(wildlife_iucn_code %in% c("CR", "EN", "VU", "NT")) |>
   left_join(distinct(tmp$wildlife_species, wildlife_sci_name, wildlife_iucn_category), by = join_by(wildlife_sci_name)) |>
-  select(level, forest_type, region, wildlife_sci_name, wildlife_type_label, wildlife_iucn_code, wildlife_iucn_category, n_plots, n_plots_total, pct_plots) |>
-  arrange(level, forest_type, region, wildlife_iucn_code, desc(n_plots))
+  select(level, forest_type, region, wildlife_sci_name, wildlife_type_label, wildlife_iucn_code, wildlife_iucn_category, n_clusters, n_plots) |>
+  arrange(level, forest_type, region, wildlife_iucn_code, desc(n_clusters), desc(n_plots))
 
 tab$d_wildlife_freq <- split_by_level(res_wildlife_freq)
 tab$d_wildlife_iucn <- split_by_level(res_wildlife_iucn)
@@ -135,38 +141,44 @@ save_tables(tab$d_wildlife_iucn, "05d_wildlife_iucn")
 ## + Full list of wildlife recorded ####
 ## Standardized names, with scientific name and IUCN category of the identified species. Records not
 ## identified ('Unknown') counted by wildlife type
+## Accessible field plots of the forest types (as the country level of the other tables)
 tab$d_wildlife_list <- wildlife |>
-  semi_join(plot_info, by = join_by(cluster_no, plot_no)) |>
+  semi_join(filter(plot_info, forest_type != "Non-forest"), by = join_by(cluster_no, plot_no)) |>
   mutate(wildlife_name = if_else(wildlife_name == "Unknown", "Not identified", wildlife_name)) |>
-  summarise(n_records = n(), n_plots = n_distinct(cluster_no, plot_no), .by = c(wildlife_type_label, wildlife_name)) |>
+  summarise(n_records = n(), n_clusters = n_distinct(cluster_no), n_plots = n_distinct(cluster_no, plot_no), .by = c(wildlife_type_label, wildlife_name)) |>
   left_join(
     select(tmp$wildlife_species, wildlife_name, wildlife_sci_name, iucn_accepted_name, wildlife_iucn_code),
     by = join_by(wildlife_name)
   ) |>
   ## Recorded name shown only when it differs from the scientific name (common names, not identified)
   mutate(wildlife_name = if_else(!is.na(wildlife_sci_name) & wildlife_name == wildlife_sci_name, NA, wildlife_name)) |>
-  select(wildlife_type_label, wildlife_sci_name, wildlife_name, iucn_accepted_name, wildlife_iucn_code, n_records, n_plots) |>
+  select(wildlife_type_label, wildlife_sci_name, wildlife_name, iucn_accepted_name, wildlife_iucn_code, n_records, n_clusters, n_plots) |>
   arrange(wildlife_type_label, is.na(wildlife_sci_name), wildlife_sci_name, wildlife_name)
 
 save_tables(list(all = tab$d_wildlife_list), "05d_wildlife_list")
 
 ## + Figures ####
 fig$d_wildlife <- tab$d_wildlife$forest_type |>
-  ggplot(aes(x = wildlife_type_label, y = pct_plots, fill = forest_type)) +
-  geom_col(position = position_dodge(preserve = "single"), width = 0.8) +
+  mutate(rec_me = rec_pct * replace_na(rec_mep, 0) / 100) |>
+  ggplot(aes(x = wildlife_type_label, y = rec_pct, fill = forest_type)) +
+  geom_col(position = position_dodge(preserve = "single", width = 0.85), width = 0.8) +
+  geom_errorbar(
+    aes(ymin = pmax(rec_pct - rec_me, 0), ymax = pmin(rec_pct + rec_me, 100)),
+    position = position_dodge(preserve = "single", width = 0.85), width = 0.2
+  ) +
   scale_fill_manual(values = defaults$pal_ftype) +
-  labs(x = "", y = "Plots with signs (%)", fill = "") +
+  labs(x = "", y = "Share of area with signs (%)", fill = "", caption = "Error bars: 90% confidence interval") +
   theme(legend.position = "bottom")
 fig$d_wildlife
 
 fig$d_wildlife_region <- tab$d_wildlife$forest_type_region |>
   filter(wildlife_type_label != "Any wildlife") |>
-  ggplot(aes(x = region, y = wildlife_type_label, fill = pct_plots)) +
+  ggplot(aes(x = region, y = wildlife_type_label, fill = rec_pct)) +
   geom_tile(color = "white", linewidth = 1) +
-  geom_text(aes(label = paste0(n_plots, "/", n_plots_total)), size = 2.5) +
+  geom_text(aes(label = paste0(round(rec_pct), "%")), size = 2.5) +
   scale_fill_gradientn(colors = c("#cde2fb", "#86b6ef", "#3987e5", "#1c5cab")) +
   facet_wrap(~forest_type) +
-  labs(x = "", y = "", fill = "Plots (%)", caption = "Labels: plots with signs / accessible plots") +
+  labs(x = "", y = "", fill = "Area (%)", caption = "Labels: share of area with signs") +
   theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))
 fig$d_wildlife_region
 

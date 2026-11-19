@@ -1,8 +1,12 @@
 
-## f. Plots per type of disturbance ####
+## f. Disturbances ####
 
-## Number and share of accessible field plots with signs of each disturbance. Main disturbances are
-## recorded as yes/no, other disturbances as a type. Forest type of the plot main LULC section.
+## Disturbances are recorded at plot level, without LULC section information. Main disturbances are recorded
+## as yes/no with an intensity, other disturbances as a type.
+## - Share of the domain area with signs of each disturbance (%): two-phase estimates with the plot as base unit
+##   and the cluster as PSU (share_plot_levels()), with the number of clusters and plots with a record.
+## - Intensity of the main disturbances: share of the affected area by recorded intensity (low, medium, high,
+##   not recorded), from the two-phase shares of area of each disturbance x intensity.
 
 tmp$disturbance <- bind_rows(
   plot |>
@@ -29,18 +33,16 @@ tmp$disturbance_group <- tibble(
   disturbance_group = c("Any", rep("Main", 4))
 )
 
-res_disturbance <- count_plots_by_level(tmp$disturbance, plot_info, disturbance) |>
+res_disturbance <- share_plot_levels(tmp$disturbance, disturbance) |>
   left_join(tmp$disturbance_group, by = join_by(disturbance)) |>
-  mutate(
-    disturbance_group = factor(replace_na(disturbance_group, "Other"), levels = c("Any", "Main", "Other")),
-    forest_type = factor(forest_type, levels = defaults$ftype_levels),
-    region = factor(region, levels = defaults$region_levels)
-  ) |>
-  select(level, forest_type, region, disturbance_group, disturbance, everything()) |>
-  arrange(level, forest_type, region, disturbance_group, desc(n_plots))
+  mutate(disturbance_group = factor(replace_na(disturbance_group, "Other"), levels = c("Any", "Main", "Other")))
 
 ## + Tables ####
-tab$f_disturbance <- split_by_level(res_disturbance)
+## Share of area with signs (%) with margin of error, clusters and plots with a record
+tab$f_disturbance <- res_disturbance |>
+  transmute(level, forest_type, region, n_pp, disturbance_group, disturbance, n_clusters, n_plots, rec_pct = round(share * 100, 1), rec_mep = Rd_mep) |>
+  arrange(level, forest_type, region, disturbance_group, desc(rec_pct)) |>
+  split_by_level()
 tab$f_disturbance$forest_type
 
 save_tables(tab$f_disturbance, "05f_disturbance")
@@ -64,24 +66,28 @@ tmp$disturbance_intensity <- plot |>
 
 tmp$disturbance_int_levels <- c("Low", "Medium", "High", "Not recorded")
 
-res_disturbance_int <- count_plots_by_level(tmp$disturbance_intensity, plot_info, dist_int) |>
+res_disturbance_int <- share_plot_levels(tmp$disturbance_intensity, dist_int) |>
   separate_wider_delim(dist_int, delim = "|", names = c("disturbance", "intensity")) |>
-  mutate(intensity = factor(intensity, levels = tmp$disturbance_int_levels)) |>
-  arrange(intensity) |>
-  pivot_wider(id_cols = c(level, forest_type, region, disturbance, n_plots_total), names_from = intensity, values_from = n_plots, values_fill = 0)
+  mutate(intensity = factor(intensity, levels = tmp$disturbance_int_levels))
 
-## All intensity columns, also when a class is absent
-for (cl in tmp$disturbance_int_levels) if (!cl %in% names(res_disturbance_int)) res_disturbance_int[[cl]] <- 0L
-
+## Share of the affected area (%) by intensity: share of area of the disturbance x intensity / share of area of
+## the disturbance (any intensity)
 tab$f_disturbance_int <- res_disturbance_int |>
-  mutate(
-    n_plots = Low + Medium + High + `Not recorded`,
-    pct_plots = round(n_plots / n_plots_total * 100, 1),
-    disturbance = factor(disturbance, levels = c("Grazing", "Fire", "Branch removal", "Tree felling")),
-    forest_type = factor(forest_type, levels = defaults$ftype_levels),
-    region = factor(region, levels = defaults$region_levels)
+  mutate(pct = share / sum(share) * 100, .by = c(level, domain, disturbance)) |>
+  filter(!is.na(pct)) |>
+  select(level, forest_type, region, disturbance, intensity, pct) |>
+  pivot_wider(names_from = intensity, values_from = pct, values_fill = 0, names_expand = TRUE) |>
+  left_join(
+    res_disturbance |> select(level, forest_type, region, disturbance, n_pp, n_clusters, n_plots, share, Rd_mep),
+    by = join_by(level, forest_type, region, disturbance)
   ) |>
-  select(level, forest_type, region, disturbance, n_plots_total, n_plots, pct_plots, n_low = Low, n_medium = Medium, n_high = High, n_int_na = `Not recorded`) |>
+  filter(share > 0) |>
+  transmute(
+    level, forest_type, region, n_pp,
+    disturbance = factor(disturbance, levels = c("Grazing", "Fire", "Branch removal", "Tree felling")),
+    n_clusters, n_plots, rec_pct = round(share * 100, 1), rec_mep = Rd_mep,
+    pct_low = round(Low, 1), pct_medium = round(Medium, 1), pct_high = round(High, 1), pct_int_na = round(`Not recorded`, 1)
+  ) |>
   arrange(level, forest_type, region, disturbance) |>
   split_by_level()
 tab$f_disturbance_int$forest_type
@@ -91,22 +97,26 @@ save_tables(tab$f_disturbance_int, "05f_disturbance_int")
 ## + Figures ####
 fig$f_disturbance <- tab$f_disturbance$forest_type |>
   filter(disturbance_group != "Other") |>
-  mutate(disturbance = fct_relevel(disturbance, "Any disturbance")) |>
-  ggplot(aes(x = disturbance, y = pct_plots, fill = forest_type)) +
-  geom_col(position = position_dodge(preserve = "single"), width = 0.8) +
+  mutate(disturbance = fct_relevel(disturbance, "Any disturbance"), rec_me = rec_pct * replace_na(rec_mep, 0) / 100) |>
+  ggplot(aes(x = disturbance, y = rec_pct, fill = forest_type)) +
+  geom_col(position = position_dodge(preserve = "single", width = 0.85), width = 0.8) +
+  geom_errorbar(
+    aes(ymin = pmax(rec_pct - rec_me, 0), ymax = pmin(rec_pct + rec_me, 100)),
+    position = position_dodge(preserve = "single", width = 0.85), width = 0.2
+  ) +
   scale_fill_manual(values = defaults$pal_ftype) +
-  labs(x = "", y = "Plots with signs (%)", fill = "") +
+  labs(x = "", y = "Share of area with signs (%)", fill = "", caption = "Error bars: 90% confidence interval") +
   theme(legend.position = "bottom")
 fig$f_disturbance
 
 fig$f_disturbance_region <- tab$f_disturbance$forest_type_region |>
   filter(disturbance_group == "Main") |>
-  ggplot(aes(x = region, y = disturbance, fill = pct_plots)) +
+  ggplot(aes(x = region, y = disturbance, fill = rec_pct)) +
   geom_tile(color = "white", linewidth = 1) +
-  geom_text(aes(label = paste0(n_plots, "/", n_plots_total)), size = 2.5) +
+  geom_text(aes(label = paste0(round(rec_pct), "%")), size = 2.5) +
   scale_fill_gradientn(colors = c("#fde0c5", "#facba6", "#f59e72", "#e4572e", "#a3301b")) +
   facet_wrap(~forest_type) +
-  labs(x = "", y = "", fill = "Plots (%)", caption = "Labels: plots with signs / accessible plots") +
+  labs(x = "", y = "", fill = "Area (%)", caption = "Labels: share of area with signs") +
   theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))
 fig$f_disturbance_region
 

@@ -610,7 +610,7 @@ tree_to_ssu <- function(.tree, .class_sub, .y, .plot_area, .name = "ssu_total"){
 }
 
 
-## Function 7: number and share of plots with a category, by reporting level ####
+## Function 7: number of clusters and plots with a category, by reporting level ####
 
 ## For plot level records (wildlife, disturbance, species presence...), not design-based estimates.
 ## .plot_cat : records with cluster_no, plot_no and the category column (.cat), several rows per plot allowed
@@ -635,7 +635,7 @@ count_plots_by_level <- function(.plot_cat, .plot_info, .cat){
     .plot_cat |>
       distinct(cluster_no, plot_no, category = !!cat) |>
       inner_join(info, by = join_by(cluster_no, plot_no)) |>
-      count(forest_type, region, category, name = "n_plots") |>
+      summarise(n_clusters = n_distinct(cluster_no), n_plots = n(), .by = c(forest_type, region, category)) |>
       left_join(tot, by = join_by(forest_type, region)) |>
       mutate(level = lvl, pct_plots = round(n_plots / n_plots_total * 100, 1))
   }) |>
@@ -688,5 +688,48 @@ plot_to_ssu <- function(.plot_val, .ph2_sp, .class_sub, .y, .name = "ssu_total")
       by = join_by(cluster_no, plot_no), relationship = "many-to-many"
     ) |>
     transmute(PSU, SSU, !!class_sub, !!.name := y_ha * ssu_area)
+
+}
+
+
+## Function 11: share of the domain area with a plot level record, two-phase estimates ####
+
+## For the plot level records without LULC section information (wildlife, disturbances, NTFP): the base unit
+## is the plot (.ph2_plot, 05-double-sampling.R), assigned to the forest type of its main LULC section, with
+## the plot area as attribute x. The cluster is the PSU of the variance. y = plot area if the category is
+## recorded in the plot, 0 otherwise (accessible field plots without record, virtual plots).
+## .plot_cat: records with cluster_no, plot_no and the category column (.cat), several rows per plot allowed.
+## Output: nfi_aggregate_levels() totals with the domain forest type and region, share = Yd / Xd and the
+## number of clusters and plots with a record (count_plots_by_level(), same domains).
+
+share_plot_levels <- function(.plot_cat, .cat, .ph1_df = ph1_data, .ph2_plot = ph2_plot, .levels = vec_levels,
+                              .lookup = domain_lookup, .plot_info = plot_info, .aoi_area = defaults$country_area_nowater){
+
+  cat <- enquo(.cat)
+  cat_name <- rlang::as_name(cat)
+
+  plot_val <- .plot_cat |>
+    distinct(cluster_no, plot_no, category = !!cat) |>
+    mutate(presence = 1)
+
+  counts <- count_plots_by_level(plot_val, .plot_info, category) |>
+    select(level, forest_type, region, category, n_clusters, n_plots)
+
+  nfi_aggregate_levels(
+    .levels = .levels,
+    .ph1_df = .ph1_df, .ph2_sp = .ph2_plot, .attr_y = cat_area, .attr_x = ssu_area,
+    .aoi_area = .aoi_area,
+    .ph2_sub = plot_to_ssu(plot_val, .ph2_plot, category, presence, .name = "cat_area"),
+    .class_sub = category
+  ) |>
+    left_join(.lookup, by = join_by(level, domain)) |>
+    mutate(share = Yd / Xd) |>
+    left_join(
+      mutate(counts, forest_type = as.character(forest_type), region = as.character(region)) |>
+        mutate(forest_type = factor(forest_type, levels = levels(.lookup$forest_type)), region = factor(region, levels = levels(.lookup$region))),
+      by = join_by(level, forest_type, region, category)
+    ) |>
+    mutate(across(c(n_clusters, n_plots), \(x) replace_na(x, 0L))) |>
+    rename(!!cat_name := category)
 
 }

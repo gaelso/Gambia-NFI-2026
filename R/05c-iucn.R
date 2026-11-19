@@ -2,8 +2,8 @@
 ## c. Species in the IUCN Red List threatened categories ####
 
 ## IUCN category from the IUCN Red List (anci$iucn, see 05-double-sampling.R). Threatened = CR (Critically Endangered),
-## EN (Endangered) and VU (Vulnerable). Occurrence = number of accessible field plots with at least one
-## live tree of the species, forest type of the plot main LULC section.
+## EN (Endangered) and VU (Vulnerable). Occurrence = number of clusters and accessible field plots with at
+## least one live tree of the species (descriptive counts), forest type of the plot main LULC section.
 
 tmp$iucn_threatened <- c("CR", "EN", "VU")
 
@@ -34,8 +34,8 @@ res_iucn <- tmp$tree_iucn |>
     region = factor(region, levels = defaults$region_levels),
     tree_iucn_code = factor(tree_iucn_code, levels = tmp$iucn_threatened)
   ) |>
-  select(level, forest_type, region, tree_species_name, tree_family, tree_iucn_code, tree_iucn_category, n_plots, n_plots_total, pct_plots) |>
-  arrange(level, forest_type, region, tree_iucn_code, desc(n_plots))
+  select(level, forest_type, region, tree_species_name, tree_family, tree_iucn_code, tree_iucn_category, n_clusters, n_plots) |>
+  arrange(level, forest_type, region, tree_iucn_code, desc(n_clusters), desc(n_plots))
 
 ## + Tables ####
 tab$c_iucn <- split_by_level(res_iucn)
